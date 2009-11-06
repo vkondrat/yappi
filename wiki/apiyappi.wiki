@@ -1,9 +1,40 @@
 #summary One-sentence summary of this page.
 
-= Introduction =
+= Reference Manual =
 
-Add your content here.
+def start(builtins = False):
+	
+	
+def stop():
+	threading.setprofile(None)
+	_yappi.stop()	
 
+def enum_stats(fenum):
+	_yappi.enum_stats(fenum)
+
+def get_stats(sorttype=_yappi.SORTTYPE_NCALL, 
+			  sortorder=_yappi.SORTORDER_DESCENDING,
+			  limit=_yappi.SHOW_ALL):
+	return _yappi.get_stats(sorttype, sortorder, limit)
+	
+def print_stats(sorttype=_yappi.SORTTYPE_NCALL, 
+				sortorder=_yappi.SORTORDER_DESCENDING,
+				limit=_yappi.SHOW_ALL):
+	li = _yappi.get_stats(sorttype, sortorder, limit)
+	for it in li:
+		print it
+
+def clear_stats():
+	_yappi.clear_stats()
+
+SORTTYPE_NAME = _yappi.SORTTYPE_NAME
+SORTTYPE_NCALL = _yappi.SORTTYPE_NCALL
+SORTTYPE_TTOTAL = _yappi.SORTTYPE_TTOTAL
+SORTTYPE_TSUB = _yappi.SORTTYPE_TSUB
+SORTTYPE_TAVG = _yappi.SORTTYPE_TAVG
+SORTORDER_ASCENDING = _yappi.SORTORDER_ASCENDING
+SORTORDER_DESCENDING = _yappi.SORTORDER_DESCENDING
+SHOW_ALL = _yappi.SHOW_ALL
 
 = Details =
 
