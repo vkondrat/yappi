@@ -8,7 +8,7 @@ This function will start yappi and all threads in the current interpreter instan
 	
 
 <font face='Courier New'>
-yappi.stop()
+yappi.<b>stop()</b>
 </font>
 Stops the currently running yappi instance. 
 
