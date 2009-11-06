@@ -38,7 +38,7 @@ yappi.enum_stats(estat)
 yappi.<b>get_stats</b>(sorttype, sortorder, limit)
 </font>
 
-Returns the current statistic results in a predefined format according to the given parameters. get_stats() function accepts following parameters:
+Returns the current statistic result in a list object formatted according to the given parameters.get_stats() function accepts following parameters:
 
   * <font face='Courier New'><b>sorttype</b></font>: There are several columns in the statistics results. This parameter controls on which column you want the sort to be based on. The valid values for this parameter are:
     * <font face='Courier New'>yappi.SORTTYPE_NAME</font>  : Sorts the results according to function name.
@@ -64,6 +64,7 @@ for stat in stats: print stat
 yappi.stop()
 '''
 Output:
+>python test.py
 name                              ccnt   ttot        tsub        tavg
 testsimple.py.foo:2               1      0.000008    0.000008    0.000008
 
@@ -75,6 +76,7 @@ profiler
 
 
         yappi overhead: 0.000036/0.000008(%464.285714)
+>python
 '''
 }}}
 
@@ -83,7 +85,7 @@ profiler
 yappi.<b>print_stats</b>()
 </font>
 
-Prints the current statistic results to the stdout. The parameters are same get_stats() function.
+Prints the current statistic results to the stdout. The parameters are same as the get_stats() function.
 
 
 <font face='Courier New'>
