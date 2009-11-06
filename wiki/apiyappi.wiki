@@ -51,7 +51,33 @@ Returns the current statistic results in a predefined format according to the gi
     * <font face='Courier New'>yappi.SORTORDER_DESCENDING</font> : Sorts the values in descending order.*(default)*
   * <font face='Courier New'><b>limit</b></font>: There may be too many functions profiled and user is not interested in many of them. So, limit gives the user the ability to limit the result set returned by the function. With this and above param, a user easily retrieves the top running functions that he/she is interested in.
     * <font face='Courier New'>yappi.SHOW_ALL</font> : Returns all of the statistic results.*(default)*
-    
+See example get_stats() output below in a simple program:
+
+{{{
+import yappi
+def foo():
+	pass
+yappi.start()
+foo()
+stats = yappi.get_stats()
+for stat in stats: print stat
+yappi.stop()
+'''
+Output:
+name                              ccnt   ttot        tsub        tavg
+testsimple.py.foo:2               1      0.000008    0.000008    0.000008
+
+threads
+Thread 828:<_yappi.get_stats>
+
+profiler
+3 functions profiled in 1 threads since Fri Nov 06 22:40:02 2009
+
+
+        yappi overhead: 0.000036/0.000008(%464.285714)
+'''
+}}}
+
 
 <font face='Courier New'>
 yappi.<b>print_stats</b>()
