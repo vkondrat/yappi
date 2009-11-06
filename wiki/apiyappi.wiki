@@ -1,4 +1,4 @@
-#summary yappi Reference Manual
+#summary yappi Usage Manual
 
 = Reference Manual =
 
