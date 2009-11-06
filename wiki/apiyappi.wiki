@@ -3,10 +3,10 @@
 = Reference Manual =
 
 <font face='Courier New'>
-yappi.<b>start</b>([profile_builtins=False]))
+yappi.<b>start</b>([builtins=False]))
 </font>
 
-This function will start yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application. If there is another instance of yappi running in the interpreter or an unexpected situation occurs while initializing the profiler data structures, a relevant exception will be raised. Please note that yappi is per-application resource, you cannot run more than one instances per-application. Function will take an optional parameter named _profile_builtins_. As the name suggests, this means we also want to profile builtin functions used by standart modules.
+This function will start yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application. If there is another instance of yappi running in the interpreter or an unexpected situation occurs while initializing the profiler data structures, a relevant exception will be raised. Please note that yappi is per-application resource, you cannot run more than one instances per-application. Function will take an optional parameter named _builtins_. As the name suggests, this means we also want to profile builtin functions used by standart modules.
 	
 
 <font face='Courier New'>
@@ -15,15 +15,39 @@ yappi.<b>stop</b>()
 
 Stops the currently running yappi instance. 
 
+<font face='Courier New'>
+yappi.<b>enum_stats</b>(fenum)
+</font>
 
-<font face="Courier New" size=12>yappi.<b>enum_stats</b>(enum_func)</font>
+Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked per yappi stat-item. Can only be called if there are any statistics available, meaning profiler had run at least one time and clear_stats() is not called. See the example below:
+{{{
+import yappi
+def enum_stats(stat_entry):
+	print e
+def foo():
+	pass
+yappi.start(True)
+foo()
+yappi.stop()
+yappi.enum_stats(estat)
+}}}
 
-Will enumerate the profile stats one by one. The parameter _enum_func_ should be a callable Python function with one parameter, say _stat_entry_
+<font face='Courier New'>
+yappi.<b>get_stats</b>([sorttype=yappi.SORTTYPE_NCALL,
+                        sortorder=yappi.SORTORDER_DESCENDING, 
+                        limit=yappi.SHOW_ALL])
+</font>
+Returns the current statistics in a predefined format according to the given parameters. get_stats() function accepts following parameters:
 
-def get_stats(sorttype=_yappi.SORTTYPE_NCALL, 
-			  sortorder=_yappi.SORTORDER_DESCENDING,
-			  limit=_yappi.SHOW_ALL):
-	return _yappi.get_stats(sorttype, sortorder, limit)
+  * sorttype: There are several columns in the statistics results. This parameter controls on which column you want the sort to be based on. The valid values for this parameter are:
+    * yappi.SORTTYPE_NAME  : Sorts the results according to function name.
+    * yappi.SORTTYPE_NCALL : Sorts the results according to their call count.*(default)*
+    * yappi.SORTTYPE_TTOTAL: Sorts the results according to their total time.
+    * yappi.SORTTYPE_TSUB  : Sorts the results according to their total subtime.
+                             Subtime means the total spent time in the function minus
+                             the total time spent in the other functions called from this
+                             function.
+    * yappi.SORTTYPE_TSUB  : Sorts the results according to their total average time.
 	
 def print_stats(sorttype=_yappi.SORTTYPE_NCALL, 
 				sortorder=_yappi.SORTORDER_DESCENDING,
