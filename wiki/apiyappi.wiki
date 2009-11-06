@@ -3,10 +3,10 @@
 = Reference Manual =
 
 <font face='Courier New'>
-yappi.<b>start</b>([builtins=False]))
+yappi.<b>start</b>([builtins]))
 </font>
 
-This function will start yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application. If there is another instance of yappi running in the interpreter or an unexpected situation occurs while initializing the profiler data structures, a relevant exception will be raised. Please note that yappi is per-application resource, you cannot run more than one instances per-application. Function will take an optional parameter named _builtins_. As the name suggests, this means we also want to profile builtin functions used by standart modules.
+This function will start yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application. If there is another instance of yappi running in the interpreter or an unexpected situation occurs while initializing the profiler data structures, a relevant exception will be raised. Please note that yappi is per-application resource, you cannot run more than one instances per-application. Function will take an optional parameter named _builtins_. As the name suggests, this means we also want to profile builtin functions used by standart modules. It is *False* by *default*.
 	
 
 <font face='Courier New'>
@@ -14,6 +14,7 @@ yappi.<b>stop</b>()
 </font>
 
 Stops the currently running yappi instance. 
+
 
 <font face='Courier New'>
 yappi.<b>enum_stats</b>(fenum)
@@ -32,38 +33,39 @@ yappi.stop()
 yappi.enum_stats(estat)
 }}}
 
+
 <font face='Courier New'>
-yappi.<b>get_stats</b>([sorttype=yappi.SORTTYPE_NCALL,
-                        sortorder=yappi.SORTORDER_DESCENDING, 
-                        limit=yappi.SHOW_ALL])
+yappi.<b>get_stats</b>([sorttype, sortorder, limit])
 </font>
-Returns the current statistics in a predefined format according to the given parameters. get_stats() function accepts following parameters:
+Returns the current statistic results in a predefined format according to the given parameters. get_stats() function accepts following parameters:
 
   * sorttype: There are several columns in the statistics results. This parameter controls on which column you want the sort to be based on. The valid values for this parameter are:
     * yappi.SORTTYPE_NAME  : Sorts the results according to function name.
     * yappi.SORTTYPE_NCALL : Sorts the results according to their call count.*(default)*
     * yappi.SORTTYPE_TTOTAL: Sorts the results according to their total time.
-    * yappi.SORTTYPE_TSUB  : Sorts the results according to their total subtime.
-                             Subtime means the total spent time in the function minus
-                             the total time spent in the other functions called from this
-                             function.
+    * yappi.SORTTYPE_TSUB  : Sorts the results according to their total subtime.      Subtime means the total spent time in the function minus the total time spent in the other functions called from this function.
     * yappi.SORTTYPE_TSUB  : Sorts the results according to their total average time.
-	
-def print_stats(sorttype=_yappi.SORTTYPE_NCALL, 
-				sortorder=_yappi.SORTORDER_DESCENDING,
-				limit=_yappi.SHOW_ALL):
-	li = _yappi.get_stats(sorttype, sortorder, limit)
-	for it in li:
-		print it
+  * sortorder: The order type of the column. Valid values for this parameter are:
+    * yappi.SORTORDER_ASCENDING : Sorts the values in ascending order.
+    * yappi.SORTORDER_DESCENDING : Sorts the values in descending order.*(default)*
+  * limit: There may be too many functions profiled and user is not interested in many of them. So, limit gives the user the ability to limit the result set returned by the function. With this and above param, a user easily retrieves the top running functions that he/she is interested in.
+    * yappi.SHOW_ALL : Returns all of the statistic results.*(default)*
+    
 
-def clear_stats():
-	_yappi.clear_stats()
+<font face='Courier New'>
+yappi.<b>print_stats</b>([sorttype=yappi.SORTTYPE_NCALL,
+                        sortorder=yappi.SORTORDER_DESCENDING, 
+                        limit=yappi.SHOW_ALL])
+</font>
 
-SORTTYPE_NAME = _yappi.SORTTYPE_NAME
-SORTTYPE_NCALL = _yappi.SORTTYPE_NCALL
-SORTTYPE_TTOTAL = _yappi.SORTTYPE_TTOTAL
-SORTTYPE_TSUB = _yappi.SORTTYPE_TSUB
-SORTTYPE_TAVG = _yappi.SORTTYPE_TAVG
+Prints the current statistic results to the stdout. The parameters are same get_stats() function.
+
+
+<font face='Courier New'>
+yappi.<b>clear_stats</b>()
+</font>
+
+
 SORTORDER_ASCENDING = _yappi.SORTORDER_ASCENDING
 SORTORDER_DESCENDING = _yappi.SORTORDER_DESCENDING
 SHOW_ALL = _yappi.SHOW_ALL
