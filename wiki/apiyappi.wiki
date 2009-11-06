@@ -6,11 +6,11 @@ yappi.*start*([profile_builtins=False])
 
 This function will start yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application. If there is another instance of yappi running in the interpreter or an unexpected situation occurs while initializing the profiler data structures, a relevant exception will be raised. Please note that yappi is per-application resource, you cannot run more than one instances per-application. Function will take an optional parameter named _profile_builtins_. As the name suggests, this means we also want to profile builtin functions used by standart modules.
 	
-<br>	
+
 <font face="Courier New" size=12>yappi.<b>stop</b>()</font>
 Stops the currently running yappi instance. 
 
-<br>	
+
 <font face="Courier New" size=12>yappi.<b>enum_stats</b>(enum_func)</font>
 
 Will enumerate the profile stats one by one. The parameter _enum_func_ should be a callable Python function with one parameter, say _stat_entry_
