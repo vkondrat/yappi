@@ -54,26 +54,14 @@ Returns the current statistic results in a predefined format according to the gi
     
 
 <font face='Courier New'>
-yappi.<b>print_stats</b>([sorttype=yappi.SORTTYPE_NCALL,
-                        sortorder=yappi.SORTORDER_DESCENDING, 
-                        limit=yappi.SHOW_ALL])
+yappi.<b>print_stats</b>()
 </font>
 
 Prints the current statistic results to the stdout. The parameters are same get_stats() function.
 
 
 <font face='Courier New'>
-yappi.<b>clear_stats</b>()
+yappi.<b>clear_stats</b>(sorttype, sortorder, limit)
 </font>
 
-
-SORTORDER_ASCENDING = _yappi.SORTORDER_ASCENDING
-SORTORDER_DESCENDING = _yappi.SORTORDER_DESCENDING
-SHOW_ALL = _yappi.SHOW_ALL
-
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Clears the result statistics. Note that the only way to really delete the statistics is this function. The results stays with the application unless application(all threads including the main thread) exists or clear_stats() is called. yappi does not mess with the result set upon stop() or start(). It is user's responsibility to clear the statistics whenever appropiate.
