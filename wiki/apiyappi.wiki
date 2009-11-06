@@ -40,16 +40,16 @@ yappi.<b>get_stats</b>(sorttype, sortorder, limit)
 
 Returns the current statistic results in a predefined format according to the given parameters. get_stats() function accepts following parameters:
 
-  * *sorttype*: There are several columns in the statistics results. This parameter controls on which column you want the sort to be based on. The valid values for this parameter are:
+  * <font face='Courier New'><b>sorttype</b></font>: There are several columns in the statistics results. This parameter controls on which column you want the sort to be based on. The valid values for this parameter are:
     * <font face='Courier New'>yappi.SORTTYPE_NAME</font>  : Sorts the results according to function name.
     * yappi.SORTTYPE_NCALL : Sorts the results according to their call count.*(default)*
     * yappi.SORTTYPE_TTOTAL: Sorts the results according to their total time.
     * yappi.SORTTYPE_TSUB  : Sorts the results according to their total subtime.      Subtime means the total spent time in the function minus the total time spent in the other functions called from this function.
     * yappi.SORTTYPE_TSUB  : Sorts the results according to their total average time.
-  * *sortorder*: The order type of the column. Valid values for this parameter are:
+  * <font face='Courier New'><b>sortorder</b></font>: The order type of the column. Valid values for this parameter are:
     * yappi.SORTORDER_ASCENDING : Sorts the values in ascending order.
     * yappi.SORTORDER_DESCENDING : Sorts the values in descending order.*(default)*
-  * *limit*: There may be too many functions profiled and user is not interested in many of them. So, limit gives the user the ability to limit the result set returned by the function. With this and above param, a user easily retrieves the top running functions that he/she is interested in.
+  * <font face='Courier New'><b>limit</b></font>: There may be too many functions profiled and user is not interested in many of them. So, limit gives the user the ability to limit the result set returned by the function. With this and above param, a user easily retrieves the top running functions that he/she is interested in.
     * yappi.SHOW_ALL : Returns all of the statistic results.*(default)*
     
 
