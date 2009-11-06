@@ -37,6 +37,7 @@ yappi.enum_stats(estat)
 <font face='Courier New'>
 yappi.<b>get_stats</b>(sorttype, sortorder, limit)
 </font>
+
 Returns the current statistic results in a predefined format according to the given parameters. get_stats() function accepts following parameters:
 
   * sorttype: There are several columns in the statistics results. This parameter controls on which column you want the sort to be based on. The valid values for this parameter are:
