@@ -1,4 +1,4 @@
-#summary Why and How we implemented yet another python profiler?
+#summary Why we implemented yet another python profiler and some techinal details.
 =Motivation:=
 _CPython_ standart distribution is coming with three profilers. _cProfile_, _Profile_ and _hotshot_. _cProfile_ module is implemented as a C module based on _lsprof_, _Profile_ is in pure Python and the hotshot can be seen as a small subset of a cProfile. The motivation to implement a new profiler is that all of these profilers lacks the support of multi-threaded programs. If you want to profile a multi-threaded application, you must give an entry point to these profilers and then maybe merge the outputs. None of these profilers is designed to work on long-running multi-threaded application. While implementing a game server, it turns out that is is impossible to profile an application retrieve the statistics then stop and then start later on on the fly(without affecting the profiled application). With the experience of implementing a game server in Python, we have identified most of the problems, tricky parts regarding profiler usage and so, we have come up with simple but powerful requirements.
 
@@ -13,3 +13,13 @@ _CPython_ standart distribution is coming with three profilers. _cProfile_, _Pro
 The theoretical O(1) behavior of yappi is based on various usage of hash tables for profiling data structures. Every profile event is mapped to a growing hash table(in which this growing factor can be changed) and then retrieved. The hash table is using simple linked-list bucketing but with a minor change that every lookup for an object in the bucket moves it closer to the bucket head. This is because profilers have strong access patterns on same functions/methods. Efficient usage of hash tables is the key to implement a fast profiler, but of course it is not everything. *I am awaiting any hints or idea from community to reduce the processing time of the profiler or improve in other way that I am not aware.* (_TODO: WE NEED MORE INFORMATION HERE_)
 
 Update: A simple free list is used to allocate/deallocate items. Static memory pools are created at profiler initialization and grows when necessary at runtime. This also decreases profiler runtime and moves profiler behavior more towards the theoretical O(1) limit. Pooling also makes space requirements of the profiled application predictable.
+
+=Tested platforms:=
+  * OpenSuse 11.1
+  * Ubuntu 9.04
+  * Windows XP SP2
+Tests are performed with Python 2.5, 2.4 and 2.6 respectively.
+Tests shall and will include big-endian and 64 bit machines.
+
+=Limitations:=
+Threads must be derived from "threading" module's Thread object.
