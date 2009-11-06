@@ -3,14 +3,14 @@
 = Reference Manual =
 
 <font face='Courier New'>
-yappi.<b>start([</b>profile_builtins=False<b>])</b>)
+yappi.<b>start</b>([profile_builtins=False]))
 </font>
 
 This function will start yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application. If there is another instance of yappi running in the interpreter or an unexpected situation occurs while initializing the profiler data structures, a relevant exception will be raised. Please note that yappi is per-application resource, you cannot run more than one instances per-application. Function will take an optional parameter named _profile_builtins_. As the name suggests, this means we also want to profile builtin functions used by standart modules.
 	
 
 <font face='Courier New'>
-yappi.<b>stop()</b>
+yappi.<b>stop</b>()
 </font>
 
 Stops the currently running yappi instance. 
