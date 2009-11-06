@@ -1,10 +1,30 @@
-#summary One-sentence summary of this page.
-
+#summary Usage reference manual for yappi.
 = Introduction =
 
 *Simple Usage*
 {{{
 import yappi
+def foo(): pass
+yappi.start()
+foo()
+stats = yappi.get_stats()
+for stat in stats: print stat
+yappi.stop()
+'''
+Output:
+>python test.py
+name                              ccnt   ttot        tsub        tavg
+testsimple.py.foo:2               1      0.000008    0.000008    0.000008
+
+threads
+Thread 828:<_yappi.get_stats>
+
+profiler
+3 functions profiled in 1 threads since Fri Nov 06 22:40:02 2009
+
+        yappi overhead: 0.000036/0.000008(%464.285714)
+>python
+'''
 }}}
 
 *Interpreting the statistic results:*
