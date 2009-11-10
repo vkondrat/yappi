@@ -52,7 +52,7 @@ while 1:
     exec s
 }}}
 So, let's execute the script and type in:
-<font face='Courier New'>
+{{{
 yappi>yappi.print_stats()
 
 name                              ccnt   ttot        tsub        tavg
@@ -69,7 +69,7 @@ threading.py.currentThread:733    1      0.000022    0.000022    0.000022
 
 threads
 Thread 13200:yappi.py.print_stats:50
-Thread 15028:testdeadlock.py.foo:6 --> Note the last executed function in the thread.
+Thread 15028:testdeadlock.py.foo:6 # --> Note the last executed function in the thread.
 
 profiler
 14 functions profiled in 2 threads since Tue Nov 10 15:44:09 2009
@@ -79,7 +79,7 @@ profiler
 
 
 yappi>
-</font>
+}}}
 We can regularly check the stats and if no change occurs on the last executed function in the thread, then this naturally is a good sign of a deadlock. 
 
 *A More Complex Usage:*
