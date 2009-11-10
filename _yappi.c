@@ -500,6 +500,8 @@ _pitenumstat(_hitem *item, void * arg)
 	// TODO: we may have MT issues here!!! declaring a preenum func in yappi.py
 	// does not help as we need a per-profiler sync. object for this. This means
 	// additional complexity and additional overhead. Any idea on this?
+	// Do we really have an mt issue here? The parameters that are sent to the 
+	// function does not directly use the same ones, they will copied over.
 	PyObject_CallFunction(efn, "((sIff))", fname, 
 				pt->callcount, pt->ttotal * tickfactor(),
 				cumdiff * tickfactor());
