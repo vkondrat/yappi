@@ -1,7 +1,7 @@
 #summary Usage reference manual for yappi.
 = Introduction =
 
-*Simple Usage*
+*Using yappi*
 {{{
 import yappi
 def foo(): pass
@@ -27,7 +27,7 @@ profiler
 '''
 }}}
 
-*Detect deadlocks:*
+*Detecting deadlocks:*
 {{{
 '''
 acquire the lock two times to create a deadlock. Let's use 
