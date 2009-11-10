@@ -11,7 +11,11 @@
 #define HT_CTX_SIZE 5
 #define HT_CTX_GROW_FACTOR 2
 #define HT_CS_COUNT_SIZE 5
+
 #define HT_CS_COUNT_GROW_FACTOR 1
+
+
+
 
 // stat related
 #define MAX_LINE_LEN 80
