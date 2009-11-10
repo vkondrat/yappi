@@ -51,7 +51,7 @@ while 1:
     s = raw_input("yappi>")
     exec s
 }}}
-So, let's execute the above script like following:
+So, let's execute the script and type in:
 {{{
 yappi>yappi.print_stats()
 
