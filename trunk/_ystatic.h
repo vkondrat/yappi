@@ -1,7 +1,9 @@
 #ifndef YSTATIC_H
 #define YSTATIC_H
 
+#ifndef _MSC_VER
 #include "stdint.h"
+#endif
 
 // static pool sizes
 #define FL_PIT_SIZE 1000
