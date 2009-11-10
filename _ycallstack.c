@@ -43,7 +43,7 @@ screate(int size)
 static int
 _sgrow(_cstack * cs)
 {
-	unsigned int i;
+	int i;
 	
 	_cstack *dummy = screate(cs->size*2);
 	if(!dummy)
@@ -73,16 +73,20 @@ sdestroy(_cstack * cs)
 int
 spush(_cstack *cs, void *ckey)
 { 
+	_hitem *it;
+	_cstackitem *ci;
+	
+	
 	if (cs->head >= cs->size-1) {
 		if (!_sgrow(cs))
 			return 0;
 	}
 	
-	_cstackitem *ci = &cs->_items[++cs->head];
+	ci = &cs->_items[++cs->head];
 	ci->ckey = ckey;
 	ci->t0 = tickcount();
 	
-	_hitem *it = hfind(cs->_counts, (uintptr_t)ckey);
+	it = hfind(cs->_counts, (uintptr_t)ckey);
 	if (it) {
 		it->val++;
 	} else {
