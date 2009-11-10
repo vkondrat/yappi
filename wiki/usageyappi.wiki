@@ -30,7 +30,7 @@ profiler
 *Detecting deadlocks:*
 {{{
 '''
-acquire the lock two times to create a deadlock. Let's use 
+acquire the lock two times to create a deadlock. Lets use 
 yappi to detect/debug those kind of deadlock issues. Note 
 that not every type of deadlock can be detected/monitored by
 yappi of course. But the idea is here to show how to use
