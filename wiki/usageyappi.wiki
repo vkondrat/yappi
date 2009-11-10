@@ -52,7 +52,7 @@ while 1:
     exec s
 }}}
 So, let's execute the script and type in:
-{{{
+<font face='Courier New'>
 yappi>yappi.print_stats()
 
 name                              ccnt   ttot        tsub        tavg
@@ -79,7 +79,7 @@ profiler
 
 
 yappi>
-}}}
+</font>
 We can regularly check the stats and if no change occurs on the last executed function in the thread, then this naturally is a good sign of a deadlock. 
 
 *A More Complex Usage:*
