@@ -299,10 +299,11 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
 static void
 _profile_thread(PyThreadState *ts)
 {	
+	_ctx *ctx;
 	ts->use_tracing = 1;	
 	ts->c_profilefunc = _yapp_callback;
 
-	_ctx *ctx = _create_ctx();
+	ctx = _create_ctx();
 	if (!ctx)
 		return;
 		
@@ -661,7 +662,6 @@ _order_stats_internal(int order)
 	}
 }
 
-
 void
 _clear_stats_internal(void)
 {
@@ -684,6 +684,7 @@ _pitenumstat2(_hitem *item, void * arg)
 	char *fname;
 	_statitem *si;
 	long long cumdiff;
+	_statnode *sni;
 	
 	pt = (_pit *)item->val;	
 	if (!pt->ttotal)
@@ -698,7 +699,7 @@ _pitenumstat2(_hitem *item, void * arg)
 			cumdiff * tickfactor(), pt->ttotal * tickfactor() / pt->callcount);
 	if (!si)
 		return 1; // abort enumeration
-	_statnode *sni = (_statnode *)ymalloc(sizeof(_statnode));
+	sni = (_statnode *)ymalloc(sizeof(_statnode));
 	if (!sni)
 		return 1; // abort enumeration
 	sni->it = si;
