@@ -51,7 +51,7 @@ while 1:
     s = raw_input("yappi>")
     exec s
 }}}
-So, let's execute the script and type in:
+So, let's execute the script and type in _yappi.print_stats()_ to print out the stat results. Let's see the output:
 {{{
 """
 yappi>yappi.print_stats()
@@ -70,7 +70,7 @@ threading.py.currentThread:733    1      0.000022    0.000022    0.000022
 
 threads
 Thread 13200:yappi.py.print_stats:50
-Thread 15028:testdeadlock.py.foo:6 # --> Note the last executed function in the thread.
+Thread 15028:testdeadlock.py.foo:6 ---> Note the last executed function in the thread.
 
 profiler
 14 functions profiled in 2 threads since Tue Nov 10 15:44:09 2009
