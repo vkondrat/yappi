@@ -1,0 +1,15 @@
+
+*nix:
+-----
+Type in shell with admin privieleges:
+>python setup.py install  
+
+Windows:
+--------
+If you have mingw installed, type:
+>python setup.py build --compiler=mingw32 install
+
+
+
+
+
