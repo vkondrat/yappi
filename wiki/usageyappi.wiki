@@ -29,11 +29,11 @@ profiler
 
 Note that there are several columns in the profiler stats.
 
-  **name*: name of the function being profiled
-  **ccnt*: is the total callcount of the function. 
-  **ttot*: total time spent in the function.
-  **tsub*: total time spent in the function excluding sub-calls.
-  **tavg*: is same as ttot / ccnt. Average total time.
+  * *name*: name of the function being profiled
+  * *ccnt*: is the total callcount of the function. 
+  * *ttot*: total time spent in the function.
+  * *tsub*: total time spent in the function excluding sub-calls.
+  * *tavg*: is same as ttot / ccnt. Average total time.
 
 the *threads* field gives information about the threads in the profiled application. It shows the last executed function in that thread. In some situations, this information can be used to monitor/debug deadlock issues easily.
 
