@@ -35,11 +35,11 @@ Note that there are several columns in the profiler stats.
   *tsub: total time spent in the function excluding sub-calls.
   *tavg: is same as ttot / ccnt. Average total time.
 
-the _threads_ field gives information about the threads in the profiled application. It shows the last executed function in that thread. In some situations, this information can be used to monitor/debug deadlock issues easily.
+the *_threads_* field gives information about the threads in the profiled application. It shows the last executed function in that thread. In some situations, this information can be used to monitor/debug deadlock issues easily.
 
-the _profiler_ field is obvious. It gives information about how many functions are profiled since when.
+the *_profiler_* field is obvious. It gives information about how many functions are profiled since when.
 
-the last field is the _yappi overhead_ field. This requires some explanation. Every profiler has an overhead that is put on the profiled application. As yappi is designed to work with long-running applications, we want to see how much overhead the profiler is putting on to the profiled application. In the example above, yappi overhead is 0.000035 ms where the application run time total is 0.000008 which means the time spent in the profiler is about ~%464 of the runtime of the application. This is too much of course as application has only one function, we have done our best from the start to make this overhead as scalable as possible. You can see different overhead calculations in the examples in this page. 
+the last field is the *_yappi overhead_* field. This requires some explanation. Every profiler has an overhead that is put on the profiled application. As yappi is designed to work with long-running applications, we want to see how much overhead the profiler is putting on to the profiled application. In the example above, yappi overhead is 0.000035 ms where the application run time total is 0.000008 which means the time spent in the profiler is about ~%464 of the runtime of the application. This is too much of course as application has only one function, we have done our best from the start to make this overhead as scalable as possible. You can see different overhead calculations in the examples in this page. 
 
 *Detecting deadlocks:*
 {{{
