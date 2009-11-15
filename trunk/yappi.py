@@ -49,7 +49,7 @@ def get_stats(sorttype=_yappi.SORTTYPE_NCALL,
 def print_stats(sorttype=_yappi.SORTTYPE_NCALL, 
 				sortorder=_yappi.SORTORDER_DESCENDING,
 				limit=_yappi.SHOW_ALL):
-	li = yappi.get_stats(sorttype, sortorder, limit)
+	li = get_stats(sorttype, sortorder, limit)
 	for it in li:
 		print it
 

@@ -529,6 +529,12 @@ _pitenumstat(_hitem *item, void * arg)
 }
 
 void
+_ymovetoend(char **s)
+{
+	*s += strlen(*s);
+}
+
+void
 _yzipstr(char *s, int size)
 {
 	int i, len;
@@ -552,6 +558,7 @@ _yzipstr(char *s, int size)
 void
 _yformat_string(char *a, char *s, int size)
 {
+	_ymovetoend(&s);
 	sprintf(s, "%s", a);
 	_yzipstr(s, size);
 }
@@ -559,6 +566,7 @@ _yformat_string(char *a, char *s, int size)
 void
 _yformat_double(double a, char *s, int size)
 {
+	_ymovetoend(&s);
 	sprintf(s, "%0.6f", a);
 	_yzipstr(s, size);
 }
@@ -566,6 +574,7 @@ _yformat_double(double a, char *s, int size)
 void
 _yformat_ulong(unsigned long a, char *s, int size)
 {
+	_ymovetoend(&s);
 	sprintf(s, "%lu", a);
 	_yzipstr(s, size);
 }
@@ -573,6 +582,7 @@ _yformat_ulong(unsigned long a, char *s, int size)
 void
 _yformat_long(long a, char *s, int size)
 {
+	_ymovetoend(&s);
 	sprintf(s, "%ld", a);
 	_yzipstr(s, size);
 }
@@ -580,6 +590,7 @@ _yformat_long(long a, char *s, int size)
 void
 _yformat_int(int a, char *s, int size)
 {
+	_ymovetoend(&s);
 	sprintf(s, "%d", a);
 	_yzipstr(s, size);
 }
@@ -595,6 +606,8 @@ _create_statitem(char *fname, unsigned long callcount, double ttot, double tsub,
 		return NULL;
 
 	// init the stat item fields.
+	memset(si->fname, 0, FUNC_NAME_LEN);
+	memset(si->result, 0, LINE_LEN);
 	p = 0;
 	_yformat_string(fname, &si->fname[p], FUNC_NAME_LEN);
 	si->callcount = callcount;
@@ -604,13 +617,13 @@ _create_statitem(char *fname, unsigned long callcount, double ttot, double tsub,
 
 	// generate the result string field.
 	_yformat_string(fname, &si->result[p], FUNC_NAME_LEN);
-	p = strlen(si->result);
+	//p = strlen(si->result);
 	_yformat_ulong(callcount, &si->result[p], INT_COLUMN_LEN);
-	p = strlen(si->result);
+	//p = strlen(si->result);
 	_yformat_double(ttot, &si->result[p], DOUBLE_COLUMN_LEN);
-	p = strlen(si->result);
+	//p = strlen(si->result);
 	_yformat_double(tsub, &si->result[p], DOUBLE_COLUMN_LEN);
-	p = strlen(si->result);
+	//p = strlen(si->result);
 	_yformat_double(tavg, &si->result[p], DOUBLE_COLUMN_LEN);
 
 	return si;
@@ -757,6 +770,7 @@ _ctxenumstat(_hitem *item, void *arg)
 	if (!fname)
 		fname = "N/A";
 	
+	memset(temp, 0, LINE_LEN);
 	p = 0;
 	_yformat_long(ctx->id, &temp[p], INT_COLUMN_LEN);
 	p = strlen(temp);
@@ -897,6 +911,7 @@ get_stats(PyObject *self, PyObject *args)
 		prof_state = "stopped";
 	}
 
+	memset(temp, 0, LINE_LEN);
 	ps = 0;
 	_yformat_string(prof_state, &temp[ps], DOUBLE_COLUMN_LEN);
 	ps = strlen(temp);
