@@ -529,7 +529,7 @@ _pitenumstat(_hitem *item, void * arg)
 }
 
 void
-_ymovetoend(char **s)
+_ystrmovtoend(char **s)
 {
 	*s += strlen(*s);
 }
@@ -558,7 +558,7 @@ _yzipstr(char *s, int size)
 void
 _yformat_string(char *a, char *s, int size)
 {
-	_ymovetoend(&s);
+	_ystrmovtoend(&s);
 	sprintf(s, "%s", a);
 	_yzipstr(s, size);
 }
@@ -566,7 +566,7 @@ _yformat_string(char *a, char *s, int size)
 void
 _yformat_double(double a, char *s, int size)
 {
-	_ymovetoend(&s);
+	_ystrmovtoend(&s);
 	sprintf(s, "%0.6f", a);
 	_yzipstr(s, size);
 }
@@ -574,7 +574,7 @@ _yformat_double(double a, char *s, int size)
 void
 _yformat_ulong(unsigned long a, char *s, int size)
 {
-	_ymovetoend(&s);
+	_ystrmovtoend(&s);
 	sprintf(s, "%lu", a);
 	_yzipstr(s, size);
 }
@@ -582,7 +582,7 @@ _yformat_ulong(unsigned long a, char *s, int size)
 void
 _yformat_long(long a, char *s, int size)
 {
-	_ymovetoend(&s);
+	_ystrmovtoend(&s);
 	sprintf(s, "%ld", a);
 	_yzipstr(s, size);
 }
@@ -590,7 +590,7 @@ _yformat_long(long a, char *s, int size)
 void
 _yformat_int(int a, char *s, int size)
 {
-	_ymovetoend(&s);
+	_ystrmovtoend(&s);
 	sprintf(s, "%d", a);
 	_yzipstr(s, size);
 }
