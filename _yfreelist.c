@@ -45,7 +45,7 @@ flcreate(int chunksize, int size)
         	yfree(flp);
         	return NULL;
         }
-                   
+
         for (i=0;i<size;i++) {
             flp->items[i] = ymalloc(chunksize);
             if (!flp->items[i]) {

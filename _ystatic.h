@@ -13,18 +13,18 @@
 #define HT_CTX_SIZE 5
 #define HT_CTX_GROW_FACTOR 2
 #define HT_CS_COUNT_SIZE 5
-
 #define HT_CS_COUNT_GROW_FACTOR 1
 
 
 
 
 // stat related
-#define MAX_LINE_LEN 80
-#define MAX_FUNC_NAME_LEN 34
-#define MAX_TIME_COLUMN_LEN 12
-#define MAX_CALLCOUNT_COLUMN_LEN 8
-#define ZIP_RIGHT_MARGIN_LEN 2
+#define LINE_LEN 80
+#define FUNC_NAME_LEN 37
+#define TIMESTR_COLUMN_LEN 26
+#define DOUBLE_COLUMN_LEN 11
+#define INT_COLUMN_LEN 9
+#define ZIP_RIGHT_MARGIN_LEN 1
 #define ZIP_DOT_COUNT 2
 #define STAT_SORT_TYPE_MAX 4
 #define STAT_SORT_ORDER_MAX 1
@@ -37,13 +37,8 @@
 #define STAT_SORT_DESCENDING 1
 #define STAT_SHOW_ALL -1
 
-#define STAT_CALLCOUNT_COLUMN_IDX MAX_FUNC_NAME_LEN
-#define STAT_TTOT_COLUMN_IDX STAT_CALLCOUNT_COLUMN_IDX+MAX_CALLCOUNT_COLUMN_LEN-1
-#define STAT_TSUB_COLUMN_IDX STAT_TTOT_COLUMN_IDX+MAX_TIME_COLUMN_LEN
-#define STAT_TAVG_COLUMN_IDX STAT_TSUB_COLUMN_IDX+MAX_TIME_COLUMN_LEN
-#define STAT_HEADER_STR "\nname                              ccnt   ttot        tsub        tavg"
-#define STAT_FOOTER_STR "\nthreads"
-#define STAT_FOOTER_STR2 "\nprofiler"
-#define STAT_MAX_FOOTSTR_LEN 255 //max. overhead calc. string len
+#define STAT_HEADER_STR "\n\nname                                 ccnt     ttot       tsub       tavg"
+#define STAT_FOOTER_STR "\n\ntid      name                                 schedc   ttot"
+#define STAT_FOOTER_STR2 "\n\nstatus     stime                     ftot     thrtot   memusage(bytes)"
 
 #endif

@@ -22,7 +22,7 @@
 
 typedef struct {
 	PyObject *co; // CodeObject or MethodDef descriptive string.
-	long callcount;
+	unsigned long callcount;
 	long long tsubtotal;
 	long long ttotal;
 }_pit;
@@ -31,6 +31,8 @@ typedef struct {
 	_cstack *cs;
 	long id;
 	_pit * last_pit;
+	unsigned long sched_cnt;
+	long long ttotal;
 }_ctx;
 
 typedef struct {
@@ -40,12 +42,12 @@ typedef struct {
 
 // stat related definitions
 typedef struct {
-	char fname[MAX_FUNC_NAME_LEN];
-	long callcount;
+	char fname[FUNC_NAME_LEN];
+	unsigned long callcount;
 	double ttot;
 	double tsub;
 	double tavg;
-	char result[MAX_LINE_LEN];
+	char result[LINE_LEN];
 }_statitem;
 
 
@@ -61,7 +63,6 @@ static _statnode *statshead;
 static _htab *contexts;
 static _htab *pits;
 static long long yappoverhead; 	// total profiler overhead
-static long long appttotal; 	// total application overhead
 static _flag flags;
 static _freelist *flpit;
 static _freelist *flctx;
@@ -69,6 +70,9 @@ static int yappinitialized;
 static int yapphavestats;	// start() called at least once or stats cleared?
 static int yapprunning;
 static time_t yappstarttime;
+static long long yappstarttick;
+static long long yappstoptick;
+static _ctx *last_ctx;
 
 static _pit *
 _create_pit(void)
@@ -94,6 +98,8 @@ _create_ctx(void)
 	if (!ctx->cs)
 		return NULL;
 	ctx->last_pit = NULL;
+	ctx->sched_cnt = 0;
+	ctx->ttotal = 0;
 	return ctx;
 }
 
@@ -220,6 +226,12 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	cp->callcount++;
 	context->last_pit = cp;	
 	
+	// update ctx stats
+	if (last_ctx != context) {
+			context->sched_cnt++;
+		}
+	last_ctx = context;
+
 	PyErr_Restore(last_type, last_value, last_tb);
 }
 
@@ -250,6 +262,14 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 		cp->ttotal += elapsed;
 	}
 	pp->tsubtotal += elapsed;
+
+	// update ctx stats
+	context->ttotal += elapsed;
+	if (last_ctx != context) {
+		context->sched_cnt++;
+	}
+	last_ctx = context;
+
 	return;
 }
 
@@ -366,7 +386,6 @@ _init_profiler(void)
 		if (!pits)
 			return 0;
 		yappoverhead = 0;
-		appttotal = 1; // do not make this zero at any time. may lead a division error.
 		flpit = flcreate(sizeof(_pit), FL_PIT_SIZE);
 		if (!flpit)
 			return 0;
@@ -374,7 +393,8 @@ _init_profiler(void)
 		if (!flctx)
 			return 0;
 		yappinitialized = 1;
-		statshead = NULL; //
+		statshead = NULL;
+		last_ctx = NULL;
 	}
 	return 1;
 }
@@ -431,6 +451,7 @@ start(PyObject *self, PyObject *args)
 	yapprunning = 1;		
 	yapphavestats = 1;
 	time (&yappstarttime);
+	yappstarttick = tickcount();
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -447,9 +468,6 @@ _item2fname(_pit *pt, int stripslashes)
 	
 	if (!pt)
 		return NULL;
-	
-	//printf("pt:%p\n", pt);
-	//printf("pt->co:%p \n", pt->co);
 	
 	if (PyCode_Check(pt->co)) {		
 		fname =  PyString_FromFormat( "%s.%s:%d",
@@ -502,99 +520,99 @@ _pitenumstat(_hitem *item, void * arg)
 	// does not help as we need a per-profiler sync. object for this. This means
 	// additional complexity and additional overhead. Any idea on this?
 	// Do we really have an mt issue here? The parameters that are sent to the 
-	// function does not directly use the same ones, they will copied over.
-	PyObject_CallFunction(efn, "((sIff))", fname, 
+	// function does not directly use the same ones, they will copied over to the VM.
+	PyObject_CallFunction(efn, "((sKff))", fname,
 				pt->callcount, pt->ttotal * tickfactor(),
 				cumdiff * tickfactor());
 
-	appttotal += pt->tsubtotal;	
 	return 0;
 }
 
-// copy src to dest. If dlen is greater and padding is true, spaces are padded till dlen.
-// otherwise string is trimmed starting from dlen-ZIP_RIGHT_MARGIN_LEN-ZIP_DOT_COUNT.
 void
-_zipstr(char *src, char *dest, int slen, int dlen, int padding)
+_yzipstr(char *s, int size)
 {
-	int i;
-	int rmargin;
-	
-	rmargin = ZIP_RIGHT_MARGIN_LEN+ZIP_DOT_COUNT;
-	if (rmargin > dlen) {
-		yerr("right margin is greater than destination string length.");
-		return;
-	}	
-	if (rmargin  < 0) {
-		yerr("right margin should be positive.");
-		return;
-	}	
-	if ((slen <= 0) || (dlen <= 0)){
-		yerr("nothing to zip to destination string.");
-		return;
-	}
+	int i, len;
 
-	if (dlen <= rmargin) {
-		if (dlen > slen) {
-			yerr("destination length is greater than the source length.");
-			return;		
-		}
-		for(i=0;i<dlen;i++)
-			dest[i] = src[i];
-	}
-	
-	// needs trim?
-	if (slen > dlen-rmargin) {
-		for(i=0;i<dlen-rmargin;i++)
-			dest[i] = src[i];
-		for(;i<dlen-ZIP_RIGHT_MARGIN_LEN;i++)
-			dest[i] = '.';
-	} else {
-		if (slen > dlen) {
-			yerr("source length is greater than the destination length.");
-			return;	
-		}
-		for(i=0;i<slen;i++)
-			dest[i] = src[i];
-		if (padding) {
-			for( ; i<dlen; i++)
-				dest[i] = ' ';
-		}
+	if (size <= ZIP_DOT_COUNT+ZIP_RIGHT_MARGIN_LEN)
+		return;
+
+	len = strlen(s);
+	for(i=len;i<size;i++)
+		s[i] = ' ';
+	s[size] = '\0'; //terminate the string
+
+	if (len > size-ZIP_DOT_COUNT-ZIP_RIGHT_MARGIN_LEN) {
+		for(i=1;i<=ZIP_DOT_COUNT ;i++)
+			s[size-i-ZIP_RIGHT_MARGIN_LEN] = '.';
+		for(i=1;i<=ZIP_RIGHT_MARGIN_LEN ;i++)
+			s[size-i] = ' ';
 	}
 }
 
-_statitem *
-_create_statitem(char *fname, long callcount, double ttot, double tsub, double tavg)
+void
+_yformat_string(char *a, char *s, int size)
 {
-	int i;
+	sprintf(s, "%s", a);
+	_yzipstr(s, size);
+}
+
+void
+_yformat_double(double a, char *s, int size)
+{
+	sprintf(s, "%0.6f", a);
+	_yzipstr(s, size);
+}
+
+void
+_yformat_ulong(unsigned long a, char *s, int size)
+{
+	sprintf(s, "%lu", a);
+	_yzipstr(s, size);
+}
+
+void
+_yformat_long(long a, char *s, int size)
+{
+	sprintf(s, "%ld", a);
+	_yzipstr(s, size);
+}
+
+void
+_yformat_int(int a, char *s, int size)
+{
+	sprintf(s, "%d", a);
+	_yzipstr(s, size);
+}
+
+_statitem *
+_create_statitem(char *fname, unsigned long callcount, double ttot, double tsub, double tavg)
+{
+	int p;
 	_statitem *si;
-	char temp[MAX_LINE_LEN];
 
 	si = (_statitem *)ymalloc(sizeof(_statitem));
 	if (!si)
 		return NULL;
-	// init the result string.
-	for(i=0;i<MAX_LINE_LEN-1;i++)
-		si->result[i] = ' ';
-	si->result[MAX_LINE_LEN-1] = (char)0;
-	
-	_zipstr(fname, &si->result[0], strlen(fname), MAX_FUNC_NAME_LEN, 1);
-	_zipstr(fname, &si->fname[0], strlen(fname), MAX_FUNC_NAME_LEN, 1);
-	sprintf(temp, "%lu", callcount);
-	_zipstr(temp, &si->result[STAT_CALLCOUNT_COLUMN_IDX], 
-			strlen(temp), MAX_CALLCOUNT_COLUMN_LEN, 1);
+
+	// init the stat item fields.
+	p = 0;
+	_yformat_string(fname, &si->fname[p], FUNC_NAME_LEN);
 	si->callcount = callcount;
-	sprintf(temp, "%0.6f", ttot);
-	_zipstr(temp, &si->result[STAT_TTOT_COLUMN_IDX], 
-			strlen(temp), MAX_TIME_COLUMN_LEN, 1);
 	si->ttot = ttot;
-	sprintf(temp, "%0.6f", tsub);
-	_zipstr(temp, &si->result[STAT_TSUB_COLUMN_IDX], 
-			strlen(temp), MAX_TIME_COLUMN_LEN, 1);
 	si->tsub = tsub;
-	sprintf(temp, "%0.6f", tavg);
-	_zipstr(temp, &si->result[STAT_TAVG_COLUMN_IDX], 
-			strlen(temp), MAX_TIME_COLUMN_LEN, 1);
-	si->tavg = tavg;	
+	si->tavg = tavg;
+
+	// generate the result string field.
+	_yformat_string(fname, &si->result[p], FUNC_NAME_LEN);
+	p = strlen(si->result);
+	_yformat_ulong(callcount, &si->result[p], INT_COLUMN_LEN);
+	p = strlen(si->result);
+	_yformat_double(ttot, &si->result[p], DOUBLE_COLUMN_LEN);
+	p = strlen(si->result);
+	_yformat_double(tsub, &si->result[p], DOUBLE_COLUMN_LEN);
+	p = strlen(si->result);
+	_yformat_double(tavg, &si->result[p], DOUBLE_COLUMN_LEN);
+
 	return si;
 }
 
@@ -706,7 +724,6 @@ _pitenumstat2(_hitem *item, void * arg)
 	
 	_insert_stats_internal(sni, (int)arg);
 		
-	appttotal += cumdiff;
 	return 0;
 }
 
@@ -727,9 +744,10 @@ _ctxenumdel(_hitem *item, void *arg)
 static int
 _ctxenumstat(_hitem *item, void *arg)
 {
+	int p;
 	char *fname;
 	_ctx * ctx;	
-	char temp[MAX_LINE_LEN];
+	char temp[LINE_LEN];
 	PyObject *buf;
 	
 	ctx = (_ctx *)item->val;
@@ -739,7 +757,15 @@ _ctxenumstat(_hitem *item, void *arg)
 	if (!fname)
 		fname = "N/A";
 	
-	sprintf(temp, "Thread %ld:%s", ctx->id, fname);
+	p = 0;
+	_yformat_long(ctx->id, &temp[p], INT_COLUMN_LEN);
+	p = strlen(temp);
+	_yformat_string(fname, &temp[p], FUNC_NAME_LEN);
+	p = strlen(temp);
+	_yformat_ulong(ctx->sched_cnt, &temp[p], INT_COLUMN_LEN);
+	p = strlen(temp);
+	_yformat_double(ctx->ttotal * tickfactor(), &temp[p], DOUBLE_COLUMN_LEN);
+
 	buf = PyString_FromString(temp);
 	if (!buf)
 		return 0; // nothing to do. just continue.
@@ -760,6 +786,7 @@ stop(PyObject *self, PyObject *args)
 	_enum_threads(&_unprofile_thread);
 	
 	yapprunning = 0;
+	yappstoptick = tickcount();
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -773,7 +800,7 @@ clear_stats(PyObject *self, PyObject *args)
 			"profiler is running. Stop profiler before clearing stats.");
 		return NULL;		
 	}
-	
+
 	henum(pits, _pitenumdel, NULL);
 	htdestroy(pits);
 	henum(contexts, _ctxenumdel, NULL);
@@ -783,7 +810,7 @@ clear_stats(PyObject *self, PyObject *args)
 	fldestroy(flctx);
 	yappinitialized = 0;
 	yapphavestats = 0;
-		
+
 	YMEMCHECK();
 
 	Py_INCREF(Py_None);
@@ -793,12 +820,13 @@ clear_stats(PyObject *self, PyObject *args)
 static PyObject*
 get_stats(PyObject *self, PyObject *args)
 {
-	char *rstr;
+	char *prof_state;
 	_statnode *p;
 	PyObject *buf,*li;
-	int type, order, limit, fcnt;
-	char temp[STAT_MAX_FOOTSTR_LEN];
-	
+	int type, order, limit, fcnt,ps;
+	char temp[LINE_LEN];
+	long long appttotal;
+
 	li = buf = NULL;
 
 	if (!yapphavestats) {
@@ -842,7 +870,6 @@ get_stats(PyObject *self, PyObject *args)
 			if (fcnt == limit)
 				break;
 		}
-		rstr = p->it->result;
 		buf = PyString_FromString(p->it->result);
 		if (!buf)
 			goto err;
@@ -862,10 +889,31 @@ get_stats(PyObject *self, PyObject *args)
 	if (PyList_Append(li, PyString_FromString(STAT_FOOTER_STR2)) < 0)
 			goto err;
 
-	if (snprintf(temp, STAT_MAX_FOOTSTR_LEN, "%d functions profiled in %d threads since %s\n\n	yappi overhead: %0.6f/%0.6f(%%%0.6f)\n\n",
-			hcount(pits), hcount(contexts), ctime(&yappstarttime),
+	if (yapprunning) {
+		appttotal = tickcount()-yappstarttick;
+		prof_state = "running";
+	} else {
+		appttotal = yappstoptick - yappstarttick;
+		prof_state = "stopped";
+	}
+
+	ps = 0;
+	_yformat_string(prof_state, &temp[ps], DOUBLE_COLUMN_LEN);
+	ps = strlen(temp);
+	_yformat_string(ctime(&yappstarttime), &temp[ps], TIMESTR_COLUMN_LEN);
+	ps = strlen(temp);
+	_yformat_int(hcount(pits), &temp[ps], INT_COLUMN_LEN);
+	ps = strlen(temp);
+	_yformat_int(hcount(contexts), &temp[ps], INT_COLUMN_LEN);
+	ps = strlen(temp);
+	_yformat_ulong(ymemusage(), &temp[ps], INT_COLUMN_LEN);
+
+	if (PyList_Append(li, PyString_FromString(temp)) < 0)
+			goto err;
+
+	if (snprintf(temp, LINE_LEN, "\n\n	yappi overhead: %0.6f/%0.6f(%%%0.6f)\n",
 			yappoverhead * tickfactor(), appttotal * tickfactor(),
-			((yappoverhead * tickfactor() )) / (appttotal * tickfactor()) * 100) == -1) {
+			((yappoverhead * tickfactor() )) / (appttotal) * 100) == -1) {
 		PyErr_SetString(YappiProfileError, "output string cannot be formatted correctly. Stack corrupted?");
 		goto err;
 	}
