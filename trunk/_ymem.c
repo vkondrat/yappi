@@ -1,13 +1,24 @@
 #include "_ymem.h"
 
+static unsigned long memused=0;
+
+unsigned long
+ymemusage(void)
+{
+	return memused;
+}
+
 void *
 ymalloc(size_t size)
 {	
-	void *p = malloc(size);
+	void *p = malloc(size+sizeof(size_t));
 	if (!p) {
 		yerr("malloc(%d) failed. No memory?", size);
 		return NULL;
 	}
+	memused += size;
+	*(size_t *)p = size;
+	p += sizeof(size_t);
 #ifdef DEBUG_MEM
 	if (dhead)
 		dprintf("_ymalloc(%d) called[%p].[old_head:%p]", size, p, dhead->ptr);
@@ -26,6 +37,8 @@ ymalloc(size_t size)
 void 
 yfree(void *p)
 {
+	p -= sizeof(size_t);
+	memused -= *(size_t *)p;
 #ifdef DEBUG_MEM
 	dnode_t *v = dhead;
 	dnode_t *prev = NULL;	

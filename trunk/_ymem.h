@@ -15,8 +15,10 @@ typedef struct dnode dnode_t;
 dnode_t *dhead;
 unsigned int dsize;
 
+
 void *ymalloc(size_t size);
 void yfree(void *p);
+unsigned long ymemusage(void);
 
 #ifdef DEBUG_MEM
 #define YMEMCHECK() \
