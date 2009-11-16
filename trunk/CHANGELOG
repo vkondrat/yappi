@@ -1,0 +1,22 @@
+v0.2
+---------
+[+] 8 multithreading related issues/bugs are fixed.
+[+] 1 memory leak(reference leak) bug fixed.
+[+] add a get_stats() function to retrieve statictics as a list. Sorting
+	order and sorting column and result limit can be adjusted via this new
+	function.
+[+] static pool and list can be adjusted at compile time.
+[+] Robustness: Memory Allocation/OS/Python VM related error(s) should
+	be propagated to the application,
+	profiler should be as transparent as possible.
+v0.3
+---------
+[+] tidy up stat formatting code. that's previously messy.
+[+] BUGFIX:application total time is calculated wrong. 
+[+] BUGFIX:change some int's to long long's to prevent simple integer overflows.
+[+] show profiler status.
+[+] show memory usage of the yappi itself.
+[+] show thread class name in the thread stats.
+[+] make thread/profiler stats column separated.
+[+] big endian support for core hash function.
+[+] BUGFIX: CURRENTCTX macro can return NULL on rare occassions, handle that.
