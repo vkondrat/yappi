@@ -11,6 +11,7 @@ v0.2
 	profiler should be as transparent as possible.
 v0.3
 ---------
+[+] yappi did not compile out of box on VS2008. Fix the compile issues. (Thanks to Kevin Watters)
 [+] tidy up stat formatting code. that's previously messy.
 [+] BUGFIX:application total time is calculated wrong. 
 [+] BUGFIX:change some int's to long long's to prevent simple integer overflows.
