@@ -11,7 +11,9 @@ ymemusage(void)
 void *
 ymalloc(size_t size)
 {	
-	void *p = malloc(size+sizeof(size_t));
+	void *p;
+	
+	p = malloc(size+sizeof(size_t));
 	if (!p) {
 		yerr("malloc(%d) failed. No memory?", size);
 		return NULL;
