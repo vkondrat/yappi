@@ -33,6 +33,7 @@ typedef struct {
 	_pit * last_pit;
 	unsigned long sched_cnt;
 	long long ttotal;
+	char *class_name;
 }_ctx;
 
 typedef struct {
@@ -100,9 +101,40 @@ _create_ctx(void)
 	ctx->last_pit = NULL;
 	ctx->sched_cnt = 0;
 	ctx->ttotal = 0;
+	ctx->id = 0;
+	ctx->class_name = NULL;
 	return ctx;
 }
 
+char *
+_get_current_thread_class_name(void)
+{
+	PyObject *mthr, *cthr, *tattr1, *tattr2;
+
+	mthr = cthr = tattr1 = tattr2 = NULL;
+
+	mthr = PyImport_ImportModule("threading");
+	if (!mthr)
+		goto err;
+	cthr = PyObject_CallMethod(mthr, "currentThread", "");
+	if (!cthr)
+		goto err;
+	tattr1 = PyObject_GetAttrString(cthr, "__class__");
+	if (!tattr1)
+		goto err;
+	tattr2 = PyObject_GetAttrString(tattr1, "__name__");
+	if (!tattr2)
+		goto err;
+
+	return PyString_AS_STRING(tattr2);
+
+err:
+	Py_XDECREF(mthr);
+	Py_XDECREF(cthr);
+	Py_XDECREF(tattr1);
+	Py_XDECREF(tattr2);
+	return 0; //continue enumeration on err.
+}
 
 static _ctx *
 _thread2ctx(PyThreadState *ts)
@@ -209,6 +241,12 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	PyErr_Fetch(&last_type, &last_value, &last_tb);
 	
 	context = CURRENTCTX;
+	
+	if (!context) {
+		yerr("current context not found in table.");
+		return;
+	}
+	
 	if (PyCFunction_Check(arg)) {
      	cp = _ccode2pit((PyCFunctionObject *)arg); 
     } else {
@@ -229,7 +267,7 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	// update ctx stats
 	if (last_ctx != context) {
 			context->sched_cnt++;
-		}
+	}
 	last_ctx = context;
 
 	PyErr_Restore(last_type, last_value, last_tb);
@@ -241,9 +279,16 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 {
 	_pit *cp, *pp;
 	_cstackitem *ci,*pi;
-	_ctx *context = CURRENTCTX;
+	_ctx *context; 
 	long long elapsed;
 
+	context = CURRENTCTX;
+	
+	if (!context) {
+		yerr("current context not found in table.");
+		return;
+	}
+	
 	ci = spop(context->cs);
 	if (!ci) {
 		dprintf("leaving a frame while callstack is empty.\n");
@@ -343,6 +388,7 @@ _profile_thread(PyThreadState *ts)
 				PyThreadState_GET()->thread_id);
 	}
 	ctx->id = ts->thread_id;
+	ctx->class_name = _get_current_thread_class_name();
 }
 
 static void
@@ -598,7 +644,6 @@ _yformat_int(int a, char *s, int size)
 _statitem *
 _create_statitem(char *fname, unsigned long callcount, double ttot, double tsub, double tavg)
 {
-	int p;
 	_statitem *si;
 
 	si = (_statitem *)ymalloc(sizeof(_statitem));
@@ -608,23 +653,19 @@ _create_statitem(char *fname, unsigned long callcount, double ttot, double tsub,
 	// init the stat item fields.
 	memset(si->fname, 0, FUNC_NAME_LEN);
 	memset(si->result, 0, LINE_LEN);
-	p = 0;
-	_yformat_string(fname, &si->fname[p], FUNC_NAME_LEN);
+
+	_yformat_string(fname, si->fname, FUNC_NAME_LEN);
 	si->callcount = callcount;
 	si->ttot = ttot;
 	si->tsub = tsub;
 	si->tavg = tavg;
 
 	// generate the result string field.
-	_yformat_string(fname, &si->result[p], FUNC_NAME_LEN);
-	//p = strlen(si->result);
-	_yformat_ulong(callcount, &si->result[p], INT_COLUMN_LEN);
-	//p = strlen(si->result);
-	_yformat_double(ttot, &si->result[p], DOUBLE_COLUMN_LEN);
-	//p = strlen(si->result);
-	_yformat_double(tsub, &si->result[p], DOUBLE_COLUMN_LEN);
-	//p = strlen(si->result);
-	_yformat_double(tavg, &si->result[p], DOUBLE_COLUMN_LEN);
+	_yformat_string(fname, si->result, FUNC_NAME_LEN);
+	_yformat_ulong(callcount, si->result, INT_COLUMN_LEN);
+	_yformat_double(ttot, si->result, DOUBLE_COLUMN_LEN);
+	_yformat_double(tsub, si->result, DOUBLE_COLUMN_LEN);
+	_yformat_double(tavg, si->result, DOUBLE_COLUMN_LEN);
 
 	return si;
 }
@@ -757,8 +798,7 @@ _ctxenumdel(_hitem *item, void *arg)
 static int
 _ctxenumstat(_hitem *item, void *arg)
 {
-	int p;
-	char *fname;
+	char *fname, *tcname;
 	_ctx * ctx;	
 	char temp[LINE_LEN];
 	PyObject *buf;
@@ -769,22 +809,26 @@ _ctxenumstat(_hitem *item, void *arg)
 	
 	if (!fname)
 		fname = "N/A";
-	
+
 	memset(temp, 0, LINE_LEN);
-	p = 0;
-	_yformat_long(ctx->id, &temp[p], INT_COLUMN_LEN);
-	p = strlen(temp);
-	_yformat_string(fname, &temp[p], FUNC_NAME_LEN);
-	p = strlen(temp);
-	_yformat_ulong(ctx->sched_cnt, &temp[p], INT_COLUMN_LEN);
-	p = strlen(temp);
-	_yformat_double(ctx->ttotal * tickfactor(), &temp[p], DOUBLE_COLUMN_LEN);
+
+	tcname = ctx->class_name;
+	if (tcname == NULL)
+		tcname = "N/A";
+
+	_yformat_string(tcname, temp, THREAD_NAME_LEN);
+	_yformat_long(ctx->id, temp, TID_COLUMN_LEN);
+	_yformat_string(fname, temp, FUNC_NAME_LEN);
+	_yformat_ulong(ctx->sched_cnt, temp, INT_COLUMN_LEN);
+	_yformat_double(ctx->ttotal * tickfactor(), temp, DOUBLE_COLUMN_LEN);
+
 
 	buf = PyString_FromString(temp);
 	if (!buf)
-		return 0; // nothing to do. just continue.
+		return 0; // just continue.
+
 	if (PyList_Append((PyObject *)arg, buf) < 0)
-		return 0; // nothing to do. just continue.
+		return 0; // just continue.
 	
 	return 0;
 }
@@ -837,7 +881,7 @@ get_stats(PyObject *self, PyObject *args)
 	char *prof_state;
 	_statnode *p;
 	PyObject *buf,*li;
-	int type, order, limit, fcnt,ps;
+	int type, order, limit, fcnt;
 	char temp[LINE_LEN];
 	long long appttotal;
 
@@ -866,10 +910,12 @@ get_stats(PyObject *self, PyObject *args)
 		goto err;
 	}
 
+
+
 	// enum and present stats in a linked list.(statshead)
 	henum(pits, _pitenumstat2, (void *)type);	
 	_order_stats_internal(order);
-	
+
 	li = PyList_New(0);
 	if (!li)
 		goto err;	
@@ -894,12 +940,12 @@ get_stats(PyObject *self, PyObject *args)
 		fcnt++;
 		p = p->next;
 	}	
-	
+
 	if (PyList_Append(li, PyString_FromString(STAT_FOOTER_STR)) < 0)
 		goto err;
 
 	henum(contexts, _ctxenumstat, (void *)li);
-	
+
 	if (PyList_Append(li, PyString_FromString(STAT_FOOTER_STR2)) < 0)
 			goto err;
 
@@ -912,16 +958,11 @@ get_stats(PyObject *self, PyObject *args)
 	}
 
 	memset(temp, 0, LINE_LEN);
-	ps = 0;
-	_yformat_string(prof_state, &temp[ps], DOUBLE_COLUMN_LEN);
-	ps = strlen(temp);
-	_yformat_string(ctime(&yappstarttime), &temp[ps], TIMESTR_COLUMN_LEN);
-	ps = strlen(temp);
-	_yformat_int(hcount(pits), &temp[ps], INT_COLUMN_LEN);
-	ps = strlen(temp);
-	_yformat_int(hcount(contexts), &temp[ps], INT_COLUMN_LEN);
-	ps = strlen(temp);
-	_yformat_ulong(ymemusage(), &temp[ps], INT_COLUMN_LEN);
+	_yformat_string(prof_state, temp, DOUBLE_COLUMN_LEN);
+	_yformat_string(ctime(&yappstarttime), temp, TIMESTR_COLUMN_LEN);
+	_yformat_int(hcount(pits), temp, INT_COLUMN_LEN);
+	_yformat_int(hcount(contexts), temp, INT_COLUMN_LEN);
+	_yformat_ulong(ymemusage(), temp, INT_COLUMN_LEN);
 
 	if (PyList_Append(li, PyString_FromString(temp)) < 0)
 			goto err;

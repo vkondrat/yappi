@@ -22,6 +22,8 @@
 #define LINE_LEN 80
 #define FUNC_NAME_LEN 37
 #define TIMESTR_COLUMN_LEN 26
+#define TID_COLUMN_LEN 7
+#define THREAD_NAME_LEN 15
 #define DOUBLE_COLUMN_LEN 11
 #define INT_COLUMN_LEN 9
 #define ZIP_RIGHT_MARGIN_LEN 1
@@ -38,7 +40,7 @@
 #define STAT_SHOW_ALL -1
 
 #define STAT_HEADER_STR "\n\nname                                 ccnt     ttot       tsub       tavg"
-#define STAT_FOOTER_STR "\n\ntid      name                                 schedc   ttot"
-#define STAT_FOOTER_STR2 "\n\nstatus     stime                     ftot     thrtot   memusage(bytes)"
+#define STAT_FOOTER_STR "\n\ntname          tid    fname                                schedc   ttot"
+#define STAT_FOOTER_STR2 "\n\nstatus     tstart                    fcnt     tcnt     memusage(bytes)"
 
 #endif
