@@ -50,6 +50,10 @@ void henum(_htab *ht, int (*fn) (_hitem *item, void *arg), void *arg);
 int hcount(_htab *ht);
 void hfree(_htab *ht, _hitem *item);
 
+// used for testing purposes.
+#ifdef YDEBUG
 void hdisp(_htab *ht);
+void hsanity(_htab *ht);
+#endif
 
 #endif

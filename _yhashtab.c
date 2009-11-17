@@ -1,10 +1,12 @@
 /*
 *    An Hash Table with following attributes:
+*
 *	   - Lazy deletion
 *	   - Separate chaining
 *	   - move-to-front heuristic
 *	   - special integer hash for better uniformity on pointer keys.
 *	   - load factor of 0.75 ( inspired from Java.HashMap)
+*
 *
 *    Sumer Cip 2009
 */
@@ -23,7 +25,7 @@ _hgrow(_htab *ht)
     if (!dummy)
 		return 0;
     for(i=0;i<ht->realsize;i++) {
-        p = ht->_table[i];       
+    	p = ht->_table[i];
         while(p) {
             next = p->next;
             if (!hadd(dummy, p->key, p->val))
@@ -145,8 +147,8 @@ hadd(_htab *ht, int key, int val)
 	// need resizing?   
     if (  ((ht->count - ht->freecount) / (double)ht->realsize) >= HLOADFACTOR) {
 		
-		#if 0
-		printf("grow needed because load factor: (%d, %d, %d) %0.6f.\n", 
+		#ifdef YDEBUG
+		yprint("grow needed because load factor: (%d, %d, %d) %0.6f.\n",
 			ht->count, 
 			ht->freecount, 
 			ht->realsize, 
@@ -190,10 +192,11 @@ hfind(_htab *ht, int key)
     return NULL;
 }
 
-// enums non-free items
+
 void
 henum(_htab *ht, int (*enumfn)(_hitem *item, void *arg), void *arg)
 {
+// enums non-free items
     int rc, i;
     _hitem *p, *next;
    
@@ -237,13 +240,15 @@ hfree(_htab *ht, _hitem *item)
 		SWAPITEM(bend, item);
 }
 
+
+#ifdef YDEBUG
+void
+hsanity(_htab *ht)
+{
 // at every point, the table must be like following:
 //  - free items are always at the end of the bucket.
 //  - accesscounts shall be found ordered per-bucket.
 //  - nitems/ht->realsize must be smaller than 0.75.
-void
-hsanity(_htab *ht)
-{
 	int i;
 	_hitem *p, *next;
 
@@ -284,3 +289,4 @@ hdisp(_htab *ht)
 		}
 	}
 }
+#endif
