@@ -2,13 +2,9 @@ v0.2
 ---------
 [+] 8 multithreading related issues/bugs are fixed.
 [+] 1 memory leak(reference leak) bug fixed.
-[+] add a get_stats() function to retrieve statictics as a list. Sorting
-	order and sorting column and result limit can be adjusted via this new
-	function.
+[+] add a get_stats() function to retrieve statictics as a list. Sorting order and sorting column and result limit can be adjusted via this new	function.
 [+] static pool and list can be adjusted at compile time.
-[+] Robustness: Memory Allocation/OS/Python VM related error(s) should
-	be propagated to the application,
-	profiler should be as transparent as possible.
+[+] Robustness: Memory Allocation/OS/Python VM related error(s) should be propagated to the application, profiler should be as transparent as possible.
 v0.3
 ---------
 [+] yappi did not compile out of box on VS2008. Fix the compile issues. (Thanks to Kevin Watters)
