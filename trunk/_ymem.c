@@ -20,7 +20,6 @@ ymalloc(size_t size)
 	}
 	memused += size;
 	*(size_t *)p = size;
-	p += sizeof(size_t);
 #ifdef DEBUG_MEM
 	if (dhead)
 		dprintf("_ymalloc(%d) called[%p].[old_head:%p]", size, p, dhead->ptr);
@@ -33,7 +32,7 @@ ymalloc(size_t size)
 	dhead = v;
 	dsize++;	
 #endif
-	return p;
+	return p+sizeof(size_t);
 }
 
 void 
