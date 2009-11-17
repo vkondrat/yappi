@@ -245,25 +245,25 @@ void
 hsanity(_htab *ht)
 {
 	int i;
-    _hitem *p, *next;
-   
-    for(i=0;i<ht->realsize;i++) {       
-        p = ht->_table[i];
+	_hitem *p, *next;
+
+	for(i=0;i<ht->realsize;i++) {
+		p = ht->_table[i];
 		if (!p)
 			continue;
 		next = p->next;
-        while((p) && (next)) {
+		while((p) && (next)) {
 			//printf("vals:(%d,%d)(%x, %x)\n", p->val, next->val, p, next);
 			if (p->free) { // if one item is free then next item should be free, too.
-				
+
 				assert(next->free);
-			} else if (!next->free){				
+			} else if (!next->free){
 				assert(p->accesscount >= next->accesscount);
-			}            
+			}
 			p = next;
 			next = p->next;
-        }
-    }  	
+		}
+	}
 	assert(((ht->count - ht->freecount) / (double)ht->realsize) < HLOADFACTOR);
 }
 
@@ -271,16 +271,16 @@ void
 hdisp(_htab *ht)
 {
 	int i,j;
-    _hitem *p;
-   
-    for(i=0;i<ht->realsize;i++) {       
-        p = ht->_table[i];
+	_hitem *p;
+
+	for(i=0;i<ht->realsize;i++) {
+		p = ht->_table[i];
 		yprint("row %d : ", i);
 		j = 0;
-        while(p) {
-            yprint(" - bucket item %d : %x(value:%d)(accesscount:%d)(free:%d)", j, (uintptr_t)p, p->val, p->accesscount, p->free);			
-            p = p->next;
+		while(p) {
+			yprint(" - bucket item %d : %x(value:%d)(accesscount:%d)(free:%d)", j, (uintptr_t)p, p->val, p->accesscount, p->free);
+			p = p->next;
 			j++;
-        }		
-    }  
+		}
+	}
 }
