@@ -46,7 +46,7 @@ yfree(void *p)
 	dnode_t *v;
 	dnode_t *prev;
 #endif
-	(char *)p -= sizeof(size_t);
+	p = (char *)p - sizeof(size_t);
 	memused -= *(size_t *)p;
 #ifdef DEBUG_MEM
 	v = dhead;
