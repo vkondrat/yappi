@@ -23,7 +23,7 @@ screate(int size)
 		yfree(cs);
 		return NULL;
 	}	
-	cs->_counts = htcreate(HT_CS_COUNT_SIZE, HT_CS_COUNT_GROW_FACTOR);
+	cs->_counts = htcreate(HT_CS_COUNT_SIZE);
 	if (!cs->_counts) {
 		yfree(cs->_items);
 		yfree(cs);
