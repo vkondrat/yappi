@@ -9,18 +9,15 @@
 #ifndef _MSC_VER
 #include "stdint.h"
 #endif
+
 #include "assert.h"
 #include "stdlib.h"
 
 #define HSIZE(n) (1<<n)
 #define HMASK(n) (HSIZE(n)-1)
 #define SWAP(a, b) (((a) ^= (b)), ((b) ^= (a)), ((a) ^= (b)))
-#define SWAPITEM(x, y) ( {\
-			SWAP(x->key, y->key); \
-            SWAP(x->val, y->val);  \
-            SWAP(x->free, y->free); \
-			SWAP(x->accesscount, y->accesscount); \
-})
+#define SWAPITEM(x, y) ((SWAP(x->key, y->key)), (SWAP(x->val, y->val)), (SWAP(x->free, y->free)), (SWAP(x->accesscount, y->accesscount)) )
+
 
 #define HLOADFACTOR 0.75
 

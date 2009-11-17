@@ -12,6 +12,9 @@ void *
 ymalloc(size_t size)
 {	
 	void *p;
+#ifdef DEBUG_MEM
+	dnode_t *v;
+#endif
 	
 	p = malloc(size+sizeof(size_t));
 	if (!p) {
@@ -21,28 +24,33 @@ ymalloc(size_t size)
 	memused += size;
 	*(size_t *)p = size;
 #ifdef DEBUG_MEM
+
 	if (dhead)
 		dprintf("_ymalloc(%d) called[%p].[old_head:%p]", size, p, dhead->ptr);
 	else
 		dprintf("_ymalloc(%d) called[%p].[old_head:nil]", size, p);
-	dnode_t *v = malloc(sizeof(dnode_t));
+	v = malloc(sizeof(dnode_t));
 	v->ptr = p;
 	v->size = size;
 	v->next = dhead;
 	dhead = v;
 	dsize++;	
 #endif
-	return p+sizeof(size_t);
+	return (char *)p+sizeof(size_t);
 }
 
 void 
 yfree(void *p)
 {
-	p -= sizeof(size_t);
+#ifdef DEBUG_MEM
+	dnode_t *v;
+	dnode_t *prev;
+#endif
+	(char *)p -= sizeof(size_t);
 	memused -= *(size_t *)p;
 #ifdef DEBUG_MEM
-	dnode_t *v = dhead;
-	dnode_t *prev = NULL;	
+	v = dhead;
+	prev = NULL;
 	while(v) {
 		if (v->ptr == p) {
 			if (prev)
