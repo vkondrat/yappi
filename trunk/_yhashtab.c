@@ -145,8 +145,7 @@ hadd(_htab *ht, int key, int val)
 		ht->count++;
     }
 	// need resizing?   
-    if (  ((ht->count - ht->freecount) / (double)ht->realsize) >= HLOADFACTOR) {
-		
+    if (((ht->count - ht->freecount) / (double)ht->realsize) >= HLOADFACTOR) {
 		#ifdef YDEBUG
 		yprint("grow needed because load factor: (%d, %d, %d) %0.6f.\n",
 			ht->count, 
