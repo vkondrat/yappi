@@ -9,14 +9,8 @@
 #define FL_PIT_SIZE 1000
 #define FL_CTX_SIZE 100
 #define HT_PIT_SIZE 10
-#define HT_PIT_GROW_FACTOR 2
 #define HT_CTX_SIZE 5
-#define HT_CTX_GROW_FACTOR 2
 #define HT_CS_COUNT_SIZE 5
-#define HT_CS_COUNT_GROW_FACTOR 1
-
-
-
 
 // stat related
 #define LINE_LEN 80

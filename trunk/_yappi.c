@@ -425,10 +425,10 @@ _init_profiler(void)
 	// already initialized? only after clear_stats() and first time, this flag
 	// will be unset.
 	if (!yappinitialized) {
-		contexts = htcreate(HT_CTX_SIZE, HT_CTX_GROW_FACTOR);
+		contexts = htcreate(HT_CTX_SIZE);
 		if (!contexts)
 			return 0;
-		pits = htcreate(HT_PIT_SIZE, HT_PIT_GROW_FACTOR);
+		pits = htcreate(HT_PIT_SIZE);
 		if (!pits)
 			return 0;
 		yappoverhead = 0;
