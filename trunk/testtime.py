@@ -28,4 +28,4 @@ li = yappi.get_stats(1, 1, 8)
 for it in li:
 	print it
 yappi.clear_stats()
-time.sleep(2)
+
