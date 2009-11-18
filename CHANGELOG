@@ -17,3 +17,4 @@ v0.3
 [+] make thread/profiler stats column separated.
 [+] big endian support for core hash function.
 [+] BUGFIX: CURRENTCTX macro can return NULL on rare occassions, handle that.
+[+] BUGFIX: Shows wrong thread class name as we call it in the profile_thread.
