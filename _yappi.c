@@ -268,7 +268,9 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	if (last_ctx != context) {
 			context->sched_cnt++;
 	}
-	last_ctx = context;
+	last_ctx = context;	
+	if (!context->class_name)
+		context->class_name = _get_current_thread_class_name();
 
 	PyErr_Restore(last_type, last_value, last_tb);
 }
@@ -314,6 +316,8 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 		context->sched_cnt++;
 	}
 	last_ctx = context;
+	if (!context->class_name)
+		context->class_name = _get_current_thread_class_name();
 
 	return;
 }
@@ -388,7 +392,6 @@ _profile_thread(PyThreadState *ts)
 				PyThreadState_GET()->thread_id);
 	}
 	ctx->id = ts->thread_id;
-	ctx->class_name = _get_current_thread_class_name();
 }
 
 static void
