@@ -133,7 +133,7 @@ err:
 	Py_XDECREF(cthr);
 	Py_XDECREF(tattr1);
 	Py_XDECREF(tattr2);
-	return 0; //continue enumeration on err.
+	return NULL; //continue enumeration on err.
 }
 
 static _ctx *
@@ -318,7 +318,7 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	last_ctx = context;
 	if (!context->class_name)
 		context->class_name = _get_current_thread_class_name();
-
+	
 	return;
 }
 
