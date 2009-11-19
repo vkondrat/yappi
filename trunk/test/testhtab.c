@@ -8,6 +8,21 @@ main(void)
 	
 	ht = htcreate(1);
 	
+	
+	it = hadd(ht, 1, 1);
+	it = hadd(ht, 2, 2);
+	hfree(ht, it);
+	hdisp(ht);
+	//printf("hadd it:%x\n", it);
+	//printf("hadd it val:%d\n", it->val);
+	it = hadd(ht, 3, 3);
+	it = hadd(ht, 4, 4);
+	it = hadd(ht, 5, 5);
+	hfree(ht, it);
+
+	hdisp(ht);
+	return 0;
+	
 	hadd(ht, 1, 1);
 	it = hfind(ht, 1);
 	hfree(ht, it);
