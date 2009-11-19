@@ -3,15 +3,23 @@
 *
 *	   - Lazy deletion
 *	   - Separate chaining
-*	   - move-to-front heuristic
+*	   - move-to-front heuristic according
+*	   - move-to-end heuristic according to free state of the item(not %100)
 *	   - special integer hash for better uniformity on pointer keys.
 *	   - load factor of 0.75 ( inspired from Java.HashMap)
+*	   - not concurrent
+*
+*	Important:
+*		Please do not hold direct references to the _hitem * objects.
+*		These objects can be changed by the hash table resizing code and
+*		client code will end up having dangling pointers. The obvious way
+*		to use hash table is to look up the table and do stuff with the
+*		returned _hitem object before another call is made to hadd() from
+*		our thread or other thread.
 *
 *
 *    Sumer Cip 2009
 */
-
-// TODO: implement the free stuff, via simple freelist struct per table.
 
 #include "_yhashtab.h"
 #include "_ydebug.h"
@@ -175,8 +183,11 @@ hfind(_htab *ht, int key)
    
 	for (prev = p, p = p->next; p; prev = p, p = p->next) {
         if ((p->key == key) && (!p->free)) {
-			p->accesscount++;            
-			if (prev->accesscount < p->accesscount)
+			p->accesscount++;
+			// accesscount is smaller then swap with it. if prev item
+			// is free then also swap to help free item to move towards the end
+			// of the bucket to reduce cache misses.
+			if ((prev->accesscount < p->accesscount) || (prev->free))
 				SWAPITEM(prev, p);
 			return prev;
         }   
@@ -215,24 +226,20 @@ hcount(_htab *ht)
 void
 hfree(_htab *ht, _hitem *item)
 {
-// TODO: BUG: If the item to be freed and the last item of the
-// bucket is free then all of the free items are at th end 
-// requirement is not true anymore. Logic should be cahanged.
-	_hitem *bend, *p;
+	_hitem *next, *p;
 	
     item->free = 1;
     ht->freecount++;
-	
-	// should move the freed item to the end to avoid
-	// redundant cache misses.
-	bend = NULL;
-	p = item->next;
-	while(p) {
-		bend = p;
-		p = p->next;
-	}
-	if (bend)
-		SWAPITEM(bend, item);
+
+    // help a little bit to reduce cache misses by moving the free item closer to the
+    // end of the bucket, if possible.
+    next = item->next;
+    if (next) {
+    	if (!next->free) {
+    		SWAPITEM(next, item);
+    	}
+    }
+
 }
 
 
@@ -241,7 +248,6 @@ void
 hsanity(_htab *ht)
 {
 // at every point, the table must be like following:
-//  - free items are always at the end of the bucket.
 //  - accesscounts shall be found ordered per-bucket.
 //  - nitems/ht->realsize must be smaller than 0.75.
 	int i;
@@ -254,12 +260,8 @@ hsanity(_htab *ht)
 		next = p->next;
 		while((p) && (next)) {
 			//printf("vals:(%d,%d)(%x, %x)\n", p->val, next->val, p, next);
-			if (p->free) { // if one item is free then next item should be free, too.
-
-				assert(next->free);
-			} else if (!next->free){
+			if ((!p->free) && (!next->free) )
 				assert(p->accesscount >= next->accesscount);
-			}
 			p = next;
 			next = p->next;
 		}
