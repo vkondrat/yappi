@@ -31,7 +31,7 @@ typedef struct {
 typedef struct {
 	_cstack *cs;
 	long id;
-	_pit *last_pit; // TODO: Holding a dangerous pointer, hadd() may change this reference. Use PyObject* co instead.
+	_pit *last_pit;
 	unsigned long sched_cnt;
 	long long ttotal;
 	char *class_name;
@@ -74,7 +74,7 @@ static int yapprunning;
 static time_t yappstarttime;
 static long long yappstarttick;
 static long long yappstoptick;
-static _ctx *last_ctx; // TODO: Holding a dangerous pointer, hadd() may change this reference. Use PyThreadState *ts instead.
+static _ctx *last_ctx;
 
 static _pit *
 _create_pit(void)
@@ -256,10 +256,10 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	}
 	
 	if (PyCFunction_Check(arg)) {
-     	cp = _ccode2pit((PyCFunctionObject *)arg); 
-    } else {
-     	cp = _code2pit(frame->f_code);
-    } 
+		cp = _ccode2pit((PyCFunctionObject *)arg); 
+	} else {
+		cp = _code2pit(frame->f_code);
+	} 
 	
 	// something went wrong. No mem, or another error. we cannot find
 	// a corresponding pit. just run away:)
