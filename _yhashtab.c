@@ -226,7 +226,7 @@ hcount(_htab *ht)
 void
 hfree(_htab *ht, _hitem *item)
 {
-	_hitem *next, *p;
+	_hitem *next;
 	
     item->free = 1;
     ht->freecount++;
