@@ -42,7 +42,7 @@ typedef struct{
 _htab *htcreate(int logsize);
 void htdestroy(_htab *ht);
 _hitem *hfind(_htab *ht, int key);
-_hitem *hadd(_htab *ht, int key, int val);
+int hadd(_htab *ht, int key, int val);
 void henum(_htab *ht, int (*fn) (_hitem *item, void *arg), void *arg);
 int hcount(_htab *ht);
 void hfree(_htab *ht, _hitem *item);

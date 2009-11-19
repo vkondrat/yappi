@@ -108,7 +108,7 @@ htdestroy(_htab *ht)
 }
 
 
-_hitem *
+int
 hadd(_htab *ht, int key, int val)
 {
     int h;
@@ -117,7 +117,7 @@ hadd(_htab *ht, int key, int val)
     h = _hhash(ht, key);
     for(inew = NULL, p = bucketend = ht->_table[h]; p; bucketend = p, p = p->next) {
 	    if ((p->key == key) && (!p->free)) // check if key already inserted.
-            return NULL;    
+            return 0;    
         if ((p->free) && (!inew)) // get the first free item.
             inew = p;
 	}
@@ -128,7 +128,7 @@ hadd(_htab *ht, int key, int val)
     } else {       
         inew = (_hitem *)ymalloc(sizeof(_hitem));
         if (!inew)
-        	return NULL;
+        	return 0;
         INITITEM(inew, key, val);
 		if (!bucketend) {
 			// add to front
@@ -149,14 +149,10 @@ hadd(_htab *ht, int key, int val)
 			ht->realsize, 
 			((ht->count - ht->freecount) / (double)ht->realsize));
 #endif		
-        if (!_hgrow(ht)) {
-			return NULL;
-		} else { 
-			// find the item in new table, references changed.
-			inew = hfind(ht, key);
-		}
+        if (!_hgrow(ht)) 
+			return 0;		
     }
-    return inew;
+    return 1;
 }
 
 
