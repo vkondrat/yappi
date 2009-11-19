@@ -17,7 +17,7 @@
 #define HMASK(n) (HSIZE(n)-1)
 #define SWAP(a, b) (((a) ^= (b)), ((b) ^= (a)), ((a) ^= (b)))
 #define SWAPITEM(x, y) ((SWAP(x->key, y->key)), (SWAP(x->val, y->val)), (SWAP(x->free, y->free)), (SWAP(x->accesscount, y->accesscount)) )
-
+#define INITITEM(x, k, v) ((x->key = k), (x->val = v), (x->free = 0), (x->accesscount = 0))
 
 #define HLOADFACTOR 0.75
 

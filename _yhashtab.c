@@ -125,19 +125,13 @@ hadd(_htab *ht, int key, int val)
     }       
     // have a free slot?
     if (new) {
-		new->key = key;
-        new->val = val;
-        new->free = 0;
-		new->accesscount = 0;		
+		INITITEM(new, key, val);				
         ht->freecount--;        
     } else {       
         new = (_hitem *)ymalloc(sizeof(_hitem));
         if (!new)
         	return 0;
-        new->key = key;
-        new->val = val;
-        new->free = 0;
-		new->accesscount = 0;
+        INITITEM(new, key, val);
 		if (!bucketend) {
 			new->next = ht->_table[h]; // add to front
 			ht->_table[h] = new;
