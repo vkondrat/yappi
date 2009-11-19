@@ -20,7 +20,7 @@ _hgrow(_htab *ht)
 {
     int i;       
     _htab *dummy; 
-    _hitem *p, *next;   
+    _hitem *p, *next, *it;   
 
     dummy = htcreate(ht->logsize+1);
     if (!dummy)
@@ -29,10 +29,13 @@ _hgrow(_htab *ht)
     	p = ht->_table[i];
         while(p) {
             next = p->next;
-			if (!p->free) {
-				if (!hadd(dummy, p->key, p->val))
-					return 0;
-			}
+			if (!hadd(dummy, p->key, p->val))
+				return 0;
+			it = hfind(dummy, p->key);
+			if (!it)
+				return 0;
+			it->accesscount = p->accesscount;
+			it->free = p->free;
             yfree(p);           
             p = next;
         }
@@ -99,8 +102,7 @@ htdestroy(_htab *ht)
             yfree(p);
             p = next;
         }
-    }
-    
+    }    
     yfree(ht->_table);
     yfree(ht);
 }
@@ -113,19 +115,15 @@ hadd(_htab *ht, int key, int val)
     _hitem *new,*p,*bucketend;
    
     h = _hhash(ht, key);
-    bucketend = p = ht->_table[h];
-    new = NULL;
-    while(p) {
-        if ((p->key == key) && (!p->free))
+    for(new=NULL,p=bucketend=ht->_table[h]; p ; bucketend = p, p = p->next) {
+	    if ((p->key == key) && (!p->free)) // check if key already inserted.
             return 0;    
-        if ((p->free) && (!new))
-            new = p;  
-		bucketend = p;
-        p = p->next;
-    }       
+        if ((p->free) && (!new)) // get the first free item.
+            new = p;
+	}       
     // have a free slot?
     if (new) {
-		INITITEM(new, key, val);				
+		INITITEM(new, key, val);
         ht->freecount--;        
     } else {       
         new = (_hitem *)ymalloc(sizeof(_hitem));
@@ -133,7 +131,8 @@ hadd(_htab *ht, int key, int val)
         	return 0;
         INITITEM(new, key, val);
 		if (!bucketend) {
-			new->next = ht->_table[h]; // add to front
+			// add to front
+			new->next = NULL; 
 			ht->_table[h] = new;
         } else {
 			bucketend->next = new;
@@ -143,14 +142,13 @@ hadd(_htab *ht, int key, int val)
     }
 	// need resizing?   
     if (((ht->count - ht->freecount) / (double)ht->realsize) >= HLOADFACTOR) {
-		#ifdef YDEBUG
+#ifdef YDEBUG
 		yprint("grow needed because load factor: (%d, %d, %d) %0.6f.\n",
 			ht->count, 
 			ht->freecount, 
 			ht->realsize, 
 			((ht->count - ht->freecount) / (double)ht->realsize));
-		#endif
-		
+#endif		
         if (!_hgrow(ht))
 			return 0;
     }
@@ -219,6 +217,9 @@ hcount(_htab *ht)
 void
 hfree(_htab *ht, _hitem *item)
 {
+// TODO: BUG: If the item to be freed and the last item of the
+// bucket is free then all of the free items are at th end 
+// requirement is not true anymore. Logic should be cahanged.
 	_hitem *bend, *p;
 	
     item->free = 1;
@@ -279,10 +280,15 @@ hdisp(_htab *ht)
 		yprint("row %d : ", i);
 		j = 0;
 		while(p) {
-			yprint(" - bucket item %d : %x(value:%d)(accesscount:%d)(free:%d)", j, (uintptr_t)p, p->val, p->accesscount, p->free);
+			yprint(" - bucket item %d : %x(value:%d)(accesscount:%d)(free:%d)", 
+				j, (uintptr_t)p, 
+				p->val, 
+				p->accesscount, 
+				p->free);
 			p = p->next;
 			j++;
 		}
+		yprint("\n");
 	}
 }
 #endif
