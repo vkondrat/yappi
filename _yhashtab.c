@@ -108,35 +108,35 @@ htdestroy(_htab *ht)
 }
 
 
-int
+_hitem *
 hadd(_htab *ht, int key, int val)
 {
     int h;
-    _hitem *new,*p,*bucketend;
+    _hitem *p, *bucketend, *inew;
    
     h = _hhash(ht, key);
-    for(new=NULL,p=bucketend=ht->_table[h]; p ; bucketend = p, p = p->next) {
+    for(inew = NULL, p = bucketend = ht->_table[h]; p; bucketend = p, p = p->next) {
 	    if ((p->key == key) && (!p->free)) // check if key already inserted.
-            return 0;    
-        if ((p->free) && (!new)) // get the first free item.
-            new = p;
-	}       
-    // have a free slot?
-    if (new) {
-		INITITEM(new, key, val);
+            return NULL;    
+        if ((p->free) && (!inew)) // get the first free item.
+            inew = p;
+	}
+	
+    if (inew) {
+		INITITEM(inew, key, val);
         ht->freecount--;        
     } else {       
-        new = (_hitem *)ymalloc(sizeof(_hitem));
-        if (!new)
-        	return 0;
-        INITITEM(new, key, val);
+        inew = (_hitem *)ymalloc(sizeof(_hitem));
+        if (!inew)
+        	return NULL;
+        INITITEM(inew, key, val);
 		if (!bucketend) {
 			// add to front
-			new->next = NULL; 
-			ht->_table[h] = new;
+			inew->next = NULL; 
+			ht->_table[h] = inew;
         } else {
-			bucketend->next = new;
-			new->next = NULL;
+			bucketend->next = inew;
+			inew->next = NULL;
 		}
 		ht->count++;
     }
@@ -149,10 +149,14 @@ hadd(_htab *ht, int key, int val)
 			ht->realsize, 
 			((ht->count - ht->freecount) / (double)ht->realsize));
 #endif		
-        if (!_hgrow(ht))
-			return 0;
+        if (!_hgrow(ht)) {
+			return NULL;
+		} else { 
+			// find the item in new table, references changed.
+			inew = hfind(ht, key);
+		}
     }
-    return 1;
+    return inew;
 }
 
 
@@ -171,17 +175,13 @@ hfind(_htab *ht, int key)
         return p;
 	}
    
-    prev = p;
-    p=p->next;
-    while(p) {
+	for (prev = p, p = p->next; p; prev = p, p = p->next) {
         if ((p->key == key) && (!p->free)) {
 			p->accesscount++;            
 			if (prev->accesscount < p->accesscount)
 				SWAPITEM(prev, p);
 			return prev;
         }   
-        prev = p;
-        p = p->next;
     }
     return NULL;
 }
