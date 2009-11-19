@@ -11,6 +11,8 @@
 *    Sumer Cip 2009
 */
 
+// TODO: implement the free stuff, via simple freelist struct per table.
+
 #include "_yhashtab.h"
 #include "_ydebug.h"
 #include "_ymem.h"
