@@ -13,6 +13,7 @@
 
 #include "_yhashtab.h"
 #include "_ydebug.h"
+#include "_ymem.h"
 
 static int
 _hgrow(_htab *ht)
@@ -28,19 +29,21 @@ _hgrow(_htab *ht)
     	p = ht->_table[i];
         while(p) {
             next = p->next;
-            if (!hadd(dummy, p->key, p->val))
-            	return 0;
-            free(p);           
+			if (!p->free) {
+				if (!hadd(dummy, p->key, p->val))
+					return 0;
+			}
+            yfree(p);           
             p = next;
         }
     }       
    
-    free(ht->_table);   
+    yfree(ht->_table);   
     ht->_table = dummy->_table;
     ht->logsize = dummy->logsize;
     ht->realsize = dummy->realsize;
     ht->mask = dummy->mask;
-    free(dummy);
+    yfree(dummy);
     return 1;
 }
 
@@ -62,7 +65,7 @@ htcreate(int logsize)
     int i;
     _htab *ht;
    
-    ht = (_htab *)malloc(sizeof(_htab));
+    ht = (_htab *)ymalloc(sizeof(_htab));
     if (!ht)
 		return NULL;
     ht->logsize = logsize;
@@ -70,9 +73,9 @@ htcreate(int logsize)
     ht->mask = HMASK(logsize);
     ht->count = 0;
     ht->freecount = 0;
-    ht->_table = (_hitem **)malloc(ht->realsize * sizeof(_hitem *));
+    ht->_table = (_hitem **)ymalloc(ht->realsize * sizeof(_hitem *));
     if (!ht->_table) {
-    	free(ht);
+    	yfree(ht);
     	return NULL;
     }
 
@@ -93,13 +96,13 @@ htdestroy(_htab *ht)
         p = ht->_table[i];
         while(p) {
             next = p->next;           
-            free(p);
+            yfree(p);
             p = next;
         }
     }
     
-    free(ht->_table);
-    free(ht);
+    yfree(ht->_table);
+    yfree(ht);
 }
 
 
@@ -128,7 +131,7 @@ hadd(_htab *ht, int key, int val)
 		new->accesscount = 0;		
         ht->freecount--;        
     } else {       
-        new = (_hitem *)malloc(sizeof(_hitem));
+        new = (_hitem *)ymalloc(sizeof(_hitem));
         if (!new)
         	return 0;
         new->key = key;
