@@ -31,7 +31,7 @@ typedef struct {
 typedef struct {
 	_cstack *cs;
 	long id;
-	_pit *last_pit; // TODO: Holding a dangerous pointer, hadd() may change this reference. 
+	_pit *last_pit; // TODO: Holding a dangerous pointer, hadd() may change this reference. Use PyObject* co instead.
 	unsigned long sched_cnt;
 	long long ttotal;
 	char *class_name;
@@ -74,7 +74,7 @@ static int yapprunning;
 static time_t yappstarttime;
 static long long yappstarttick;
 static long long yappstoptick;
-static _ctx *last_ctx; // TODO: Holding a dangerous pointer, hadd() may change this reference. 
+static _ctx *last_ctx; // TODO: Holding a dangerous pointer, hadd() may change this reference. Use PyThreadState *ts instead.
 
 static _pit *
 _create_pit(void)
