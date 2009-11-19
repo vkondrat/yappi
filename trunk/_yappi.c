@@ -573,7 +573,7 @@ _pitenumstat(_hitem *item, void * arg)
 	if (!fname)
 		fname = "N/A";
 
-	// TODO: we may have MT issues here!!! declaring a preenum func in yappi.py
+	// We may have MT issues here!!! declaring a preenum func in yappi.py
 	// does not help as we need a per-profiler sync. object for this. This means
 	// additional complexity and additional overhead. Any idea on this?
 	// Do we really have an mt issue here? The parameters that are sent to the 
