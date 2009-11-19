@@ -7,6 +7,7 @@
 
 */
 
+
 #include "Python.h"
 #include "frameobject.h"
 #include "_ycallstack.h"
@@ -30,7 +31,7 @@ typedef struct {
 typedef struct {
 	_cstack *cs;
 	long id;
-	_pit * last_pit;
+	_pit *last_pit; // TODO: Holding a dangerous pointer, hadd() may change this reference. 
 	unsigned long sched_cnt;
 	long long ttotal;
 	char *class_name;
@@ -73,12 +74,13 @@ static int yapprunning;
 static time_t yappstarttime;
 static long long yappstarttick;
 static long long yappstoptick;
-static _ctx *last_ctx;
+static _ctx *last_ctx; // TODO: Holding a dangerous pointer, hadd() may change this reference. 
 
 static _pit *
 _create_pit(void)
 {
 	_pit *pit;
+	
 	pit = flget(flpit);
 	if (!pit)
 		return NULL;
@@ -139,7 +141,9 @@ err:
 static _ctx *
 _thread2ctx(PyThreadState *ts)
 {
-	_hitem *it = hfind(contexts, (uintptr_t)ts);
+	_hitem *it;
+	
+	it = hfind(contexts, (uintptr_t)ts);
 	if (!it)
 		return NULL;
 	return (_ctx *)it->val;
@@ -159,7 +163,9 @@ static _pit *
 _ccode2pit(void *cco)
 {
 	PyCFunctionObject *cfn = cco;
-	_hitem *it = hfind(pits, (uintptr_t)cco);
+	_hitem *it;
+
+	it = hfind(pits, (uintptr_t)cco);
 	if (!it) {
 		_pit *pit = _create_pit();
 		if (!pit)
@@ -218,7 +224,9 @@ _ccode2pit(void *cco)
 static _pit *
 _code2pit(void *co)
 {
-	_hitem *it = hfind(pits, (uintptr_t)co);
+	_hitem *it;
+	
+	it = hfind(pits, (uintptr_t)co);
 	if (!it) {
 		_pit *pit = _create_pit();
 		if (!pit)
@@ -266,7 +274,7 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	
 	// update ctx stats
 	if (last_ctx != context) {
-			context->sched_cnt++;
+		context->sched_cnt++;
 	}
 	last_ctx = context;	
 	if (!context->class_name)
