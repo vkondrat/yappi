@@ -18,3 +18,4 @@ v0.3
 [+] big endian support for core hash function.
 [+] BUGFIX: CURRENTCTX macro can return NULL on rare occassions, handle that.
 [+] BUGFIX: Shows wrong thread class name as we call it in the profile_thread.
+[+] OPTIMIZATION:some hashtable enhancements are done.
