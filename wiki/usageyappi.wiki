@@ -30,7 +30,7 @@ running    Sun Nov 22 11:51:16 200.. 2        1        37932
 '''
 }}}
 
-Note that there are several columns in the profiler stats.
+Note that there are several columns in the profiler stats. The first one is *function stats*:
 
   * *name*: name of the function being profiled
   * *ccnt*: is the total callcount of the function. 
@@ -38,8 +38,13 @@ Note that there are several columns in the profiler stats.
   * *tsub*: total time spent in the function excluding sub-calls.
   * *tavg*: is same as ttot / ccnt. Average total time.
 
-the *threads* field gives information about the threads in the profiled application. It shows the last executed function in that thread. In some situations, this information can be used to monitor/debug deadlock issues easily.
+the *thread stats* field gives information about the threads in the profiled application. 
 
+  * *tname*: name of the object that is derived from threading.Thread object
+  * *tid*: id of the thread. 
+  * *fname*: name of the last executed function in this thread.
+  * *schedc*: number of times this thread is scheduled.
+  * *ttot*: total time spent in this thread.
 
 the *profiler* field is obvious. It gives information about how many functions are profiled since when.
 
