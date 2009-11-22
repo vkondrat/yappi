@@ -132,6 +132,8 @@ if __name__ == "__main__":
 	yappi.start(True)
 	for i in range(NTHREAD):
 		thr = Thread(foo(1))
+                thr.start()
+                thr.join()
 	for it in yappi.get_stats(yappi.SORTTYPE_TTOTAL,
 				  yappi.SORTORDER_ASCENDING,
 				  yappi.SHOW_ALL):
@@ -140,45 +142,52 @@ if __name__ == "__main__":
 """
 projects/yappi$ python usage.py
 
-name                              ccnt   ttot        tsub        tavg
-<time.sleep>                      50     4.523953    4.523953    0.090479
-testusage2.py.foo:12              50     4.523881    0.001462    0.090478
-testusage2.py.foo2:9              45     4.522419    0.001020    0.100498
-threading.py._note:44             20     0.000137    0.000137    0.000007
-<thread.get_ident>                15     0.000100    0.000100    0.000007
-<built-in method acquire>         14     0.000108    0.000108    0.000008
-<built-in method acquire>         11     0.000255    0.000255    0.000023
-<built-in method release>         11     0.000078    0.000078    0.000007
-threading.py.__init__:39          10     0.000096    0.000096    0.000010
-threading.py.currentThread:733    10     0.000226    0.000158    0.000023
-<built-in method release>         9      0.000064    0.000064    0.000007
-threading.py.__stop:539           5      0.000838    0.000167    0.000168
-threading.py.run:444              5      0.000055    0.000055    0.000011
-threading.py.isDaemon:624         5      0.000038    0.000038    0.000008
-threading.py.start:430            5      0.005066    0.000294    0.001013
-threading.py._newname:374         5      0.000105    0.000105    0.000021
-threading.py.notifyAll:267        5      0.000428    0.000114    0.000086
-<thread.allocate_lock>            5      0.000081    0.000081    0.000016
-threading.py.__init__:158         5      0.000262    0.000225    0.000052
-threading.py.Condition:153        5      0.000375    0.000113    0.000075
-threading.py._is_owned:198        5      0.000117    0.000070    0.000023
-<thread.start_new_thread>         5      0.002105    0.002105    0.000421
-threading.py.notify:249           5      0.000274    0.000124    0.000055
-threading.py._set_daemon:415      5      0.000286    0.000124    0.000057
-threading.py.__init__:396         5      0.001264    0.000357    0.000253
-threading.py.join:579             5      0.000401    0.000194    0.000080
-<len>                             5      0.000040    0.000040    0.000008
-<range>                           1      0.000009    0.000009    0.000009
-
-threads
-Thread 12032:<_yappi.get_stats>
-Thread 11456:<built-in method acquire>
-
-profiler
-30 functions profiled in 2 threads since Fri Oct 23 11:46:38 2009
+name                                 ccnt     ttot       tsub       tavg
+<built-in method release>            2        0.000015   0.000015   0.000007
+<range>                              1        0.000041   0.000041   0.000041
+<len>                                5        0.000041   0.000041   0.000008
+threading.py.isDaemon:624            5        0.000043   0.000043   0.000009
+<built-in method acquire>            2        0.000054   0.000054   0.000027
+threading.py.__init__:39             10       0.000100   0.000100   0.000010
+<thread.get_ident>                   15       0.000113   0.000113   0.000008
+threading.py._newname:374            5        0.000116   0.000116   0.000023
+threading.py.run:444                 5        0.000120   0.000120   0.000024
+threading.py._release_save:192       5        0.000120   0.000074   0.000024
+<thread.allocate_lock>               10       0.000177   0.000177   0.000018
+threading.py.currentThread:733       10       0.000244   0.000171   0.000024
+threading.py._note:44                30       0.000256   0.000256   0.000009
+threading.py._set_daemon:415         5        0.000288   0.000114   0.000058
+threading.py.__init__:158            5        0.000318   0.000276   0.000064
+threading.py._acquire_restore:195    5        0.000441   0.000080   0.000088
+threading.py.Condition:153           5        0.000446   0.000127   0.000089
+threading.py.notify:249              5        0.000575   0.000313   0.000115
+threading.py._is_owned:198           10       0.000736   0.000175   0.000074
+threading.py.notifyAll:267           5        0.000750   0.000134   0.000150
+<built-in method acquire>            17       0.000840   0.000840   0.000049
+<built-in method acquire>            17       0.000921   0.000921   0.000054
+<built-in method acquire>            22       0.000925   0.000925   0.000042
+<built-in method acquire>            25       0.001312   0.001312   0.000052
+threading.py.__stop:539              5        0.001413   0.000210   0.000283
+threading.py.__init__:396            5        0.001418   0.000398   0.000284
+<thread.start_new_thread>            5        0.001566   0.001566   0.000313
+threading.py.start:430               5        0.002355   0.000314   0.000471
+threading.py.wait:207                5        0.003407   0.000471   0.000681
+threading.py.join:579                5        0.004375   0.000474   0.000875
+<time.sleep>                         50       4.520968   4.520968   0.090419
+usage.py.foo2:8                      45       4.521722   0.001107   0.100483
+usage.py.foo:11                      50       4.523304   0.001581   0.090466
 
 
-        yappi overhead: 0.003215/4.531648(%0.070950)
+tname          tid    fname                                schedc   ttot
+Thread         3552   <built-in method acquire>            19       0.002130
+_MainThread    2584   <_yappi.get_stats>                   20       27.16196..
+
+
+status     tstart                    fcnt     tcnt     memusage(bytes)
+running    Sun Nov 22 12:21:56 200.. 35       2        46140
+
+
+        yappi overhead: 0.004283/4.532788(%0.000000)
 
 projects/yappi$
 """
