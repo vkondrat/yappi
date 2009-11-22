@@ -126,10 +126,10 @@ hadd(_htab *ht, int key, int val)
    
     h = _hhash(ht, key);
     for(inew = NULL, p = bucketend = ht->_table[h]; p; bucketend = p, p = p->next) {
-	    if ((p->key == key) && (!p->free)) // check if key already inserted.
-            return 0;    
-        if ((p->free) && (!inew)) // get the first free item.
-            inew = p;
+		if ((p->key == key) && (!p->free)) // check if key already inserted.
+			return 0;    
+		if ((p->free) && (!inew)) // get the first free item.
+			inew = p;
 	}
 	
     if (inew) {
@@ -140,7 +140,7 @@ hadd(_htab *ht, int key, int val)
         if (!inew)
         	return 0;
         INITITEM(inew, key, val);
-		if (!bucketend) {
+        if (!bucketend) {
 			// add to front
 			inew->next = NULL; 
 			ht->_table[h] = inew;
