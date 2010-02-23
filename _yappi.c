@@ -275,7 +275,13 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	spush(context->cs, cp);
 
 	cp->callcount++;
-	context->last_pit = cp;
+	
+	// do not show builtin pits if specified even in last_pit of the context.
+    if  ((!flags.builtins) && (cp->builtin))
+        ;
+	else {
+		context->last_pit = cp;
+	}
 
 	// update ctx stats
 	if (last_ctx != context) {
@@ -555,15 +561,9 @@ _item2fname(_pit *pt, int stripslashes)
 	//have not seen any problem, yet, in live.
 	if (PyCode_Check(pt->co)) {
 		Py_DECREF(fname);
-	}
-
-    //testing
+	}    
     buf = &buf[sp];
-    //if (strlen(buf) >= FUNC_NAME_LEN-1) {
-    //   buf[FUNC_NAME_LEN-1] = '\0';
-    //}
-    //testing
-
+	
 	return buf;
 }
 
