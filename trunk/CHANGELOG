@@ -19,7 +19,7 @@ v0.3
 [+] BUGFIX: CURRENTCTX macro can return NULL on rare occassions, handle that.
 [+] BUGFIX: Shows wrong thread class name as we call it in the profile_thread.
 [+] OPTIMIZATION:some hashtable enhancements are done.
-v0.4
+v0.41
 -----
 [+] FIXED: Internal hash table grow leads mem corruption on i686 machines.
 [+] FIXED: Long function names leads to mem corruption in.
