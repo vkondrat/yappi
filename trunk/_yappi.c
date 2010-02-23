@@ -698,8 +698,8 @@ _create_statitem(char *fname, unsigned long callcount, double ttot, double tsub,
 	// generate the result string field.
 	_yformat_string(fname, si->result, FUNC_NAME_LEN);
     _yformat_ulong(callcount, si->result, INT_COLUMN_LEN);
-	_yformat_double(ttot, si->result, DOUBLE_COLUMN_LEN);
 	_yformat_double(tsub, si->result, DOUBLE_COLUMN_LEN);
+	_yformat_double(ttot, si->result, DOUBLE_COLUMN_LEN);	
 	_yformat_double(tavg, si->result, DOUBLE_COLUMN_LEN);
 
 
@@ -1049,8 +1049,7 @@ enum_stats(PyObject *self, PyObject *args)
     }
 
 	henum(pits, _pitenumstat, enumfn);
-	//_print_footer();
-
+	
 	Py_INCREF(Py_None);
 	return Py_None;
 }
