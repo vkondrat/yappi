@@ -3,7 +3,7 @@
  yappi.py
  Yet Another Python Profiler
 
- Sumer Cip 2009 
+ Sumer Cip 2009
 
 */
 
@@ -44,12 +44,12 @@ typedef struct {
 
 // stat related definitions
 typedef struct {
-	char fname[FUNC_NAME_LEN];
 	unsigned long callcount;
 	double ttot;
 	double tsub;
 	double tavg;
 	char result[LINE_LEN];
+    char fname[FUNC_NAME_LEN];
 }_statitem;
 
 
@@ -80,19 +80,19 @@ static _pit *
 _create_pit(void)
 {
 	_pit *pit;
-	
+
 	pit = flget(flpit);
 	if (!pit)
 		return NULL;
 	pit->callcount = 0;
 	pit->ttotal = 0;
 	pit->tsubtotal = 0;
-	pit->co = NULL;	
+	pit->co = NULL;
 	return pit;
 }
 
 static _ctx *
-_create_ctx(void) 
+_create_ctx(void)
 {
 	_ctx *ctx = flget(flctx);
 	if (!ctx)
@@ -142,7 +142,7 @@ static _ctx *
 _thread2ctx(PyThreadState *ts)
 {
 	_hitem *it;
-	
+
 	it = hfind(contexts, (uintptr_t)ts);
 	if (!it)
 		return NULL;
@@ -156,7 +156,7 @@ _del_pit(_pit *pit)
 {
 	// if it is a regular C string all DECREF will do is to decrement the first
 	// character's value.
-	Py_DECREF(pit->co); 
+	Py_DECREF(pit->co);
 }
 
 static _pit *
@@ -170,7 +170,7 @@ _ccode2pit(void *cco)
 		_pit *pit = _create_pit();
 		if (!pit)
 			return NULL;
-		if (!hadd(pits, (uintptr_t)cco, (uintptr_t)pit))	
+		if (!hadd(pits, (uintptr_t)cco, (uintptr_t)pit))
 			return NULL;
 		// built-in FUNCTION?
 		if (cfn->m_self == NULL) {
@@ -225,13 +225,13 @@ static _pit *
 _code2pit(void *co)
 {
 	_hitem *it;
-	
+
 	it = hfind(pits, (uintptr_t)co);
 	if (!it) {
 		_pit *pit = _create_pit();
 		if (!pit)
 			return NULL;
-		if (!hadd(pits, (uintptr_t)co, (uintptr_t)pit))	
+		if (!hadd(pits, (uintptr_t)co, (uintptr_t)pit))
 			return NULL;
 		Py_INCREF((PyObject *)co);
 		pit->co = co; //dummy
@@ -247,36 +247,37 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	_pit *cp;
 	PyObject *last_type, *last_value, *last_tb;
 	PyErr_Fetch(&last_type, &last_value, &last_tb);
-	
+
 	context = CURRENTCTX;
-	
+
 	if (!context) {
 		yerr("current context not found in table.");
 		return;
 	}
-	
+
 	if (PyCFunction_Check(arg)) {
-		cp = _ccode2pit((PyCFunctionObject *)arg); 
+		cp = _ccode2pit((PyCFunctionObject *)arg);
 	} else {
 		cp = _code2pit(frame->f_code);
-	} 
-	
+	}
+
 	// something went wrong. No mem, or another error. we cannot find
 	// a corresponding pit. just run away:)
 	if (!cp) {
 		PyErr_Restore(last_type, last_value, last_tb);
 		return;
-	}	
-	
-	spush(context->cs, cp);
+	}
+
+	spush(context->cs, cp);    
+
 	cp->callcount++;
-	context->last_pit = cp;	
-	
+	context->last_pit = cp;
+
 	// update ctx stats
 	if (last_ctx != context) {
 		context->sched_cnt++;
 	}
-	last_ctx = context;	
+	last_ctx = context;
 	if (!context->class_name)
 		context->class_name = _get_current_thread_class_name();
 
@@ -289,16 +290,16 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 {
 	_pit *cp, *pp;
 	_cstackitem *ci,*pi;
-	_ctx *context; 
+	_ctx *context;
 	long long elapsed;
 
 	context = CURRENTCTX;
-	
+
 	if (!context) {
 		yerr("current context not found in table.");
 		return;
 	}
-	
+
 	ci = spop(context->cs);
 	if (!ci) {
 		dprintf("leaving a frame while callstack is empty.\n");
@@ -309,7 +310,7 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 		cp->ttotal += (tickcount() - ci->t0);
 		return;
 	}
-	pp = pi->ckey; 
+	pp = pi->ckey;
 	elapsed = (tickcount() - ci->t0);
 	if (scount(context->cs, ci->ckey) > 0) {
 		cp->tsubtotal -= elapsed;
@@ -326,28 +327,28 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	last_ctx = context;
 	if (!context->class_name)
 		context->class_name = _get_current_thread_class_name();
-	
+
 	return;
 }
 
 // context will be cleared by the free list. we do not free it here.
 // we only free the context call stack.
-static void 
-_del_ctx(_ctx * ctx) 
+static void
+_del_ctx(_ctx * ctx)
 {
 	sdestroy(ctx->cs);
 }
 
-static int 
+static int
 _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
 		  PyObject *arg)
 {
 
 	long long t0 = tickcount();
-	switch (what) {		
-		case PyTrace_CALL:		
+	switch (what) {
+		case PyTrace_CALL:
 			_call_enter(self, frame, arg);
-			break;				
+			break;
 		case PyTrace_RETURN: // either normally or with an exception
 			_call_leave(self, frame, arg);
 			break;
@@ -360,7 +361,7 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
 			break;
 
 		case PyTrace_C_RETURN:
-		case PyTrace_C_EXCEPTION:	
+		case PyTrace_C_EXCEPTION:
 			if (PyCFunction_Check(arg) && (flags.builtins))
 			    _call_leave(self, frame, arg);
 			break;
@@ -375,28 +376,28 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
 
 static void
 _profile_thread(PyThreadState *ts)
-{	
+{
 	_ctx *ctx;
-	ts->use_tracing = 1;	
+	ts->use_tracing = 1;
 	ts->c_profilefunc = _yapp_callback;
 
 	ctx = _create_ctx();
 	if (!ctx)
 		return;
-		
-	// If a ThreadState object is destroyed, currently(v0.2) yappi does not 
+
+	// If a ThreadState object is destroyed, currently(v0.2) yappi does not
 	// deletes the associated resources. Instead, we rely on the fact that
 	// the ThreadState objects are actually recycled. We are using pointer
 	// to map to the internal contexts table, and Python VM will try to use
 	// the destructed thread's pointer when a new thread is created. They are
-	// pooled inside the VM. This is very hecky solution, but there is no 
+	// pooled inside the VM. This is very hecky solution, but there is no
 	// efficient and easy way to somehow know that a Python Thread is about
 	// to be destructed.
 	if (!hadd(contexts, (uintptr_t)ts, (uintptr_t)ctx)) {
 		_del_ctx(ctx);
 		if (!flput(flctx, ctx))
 			yerr("Context cannot be recycled. Possible memory leak.[%d bytes]", sizeof(_ctx));
-		dprintf("Context add failed. Already added?(%p, %ld)", ts, 
+		dprintf("Context add failed. Already added?(%p, %ld)", ts,
 				PyThreadState_GET()->thread_id);
 	}
 	ctx->id = ts->thread_id;
@@ -405,7 +406,7 @@ _profile_thread(PyThreadState *ts)
 static void
 _unprofile_thread(PyThreadState *ts)
 {
-	ts->use_tracing = 0;	
+	ts->use_tracing = 0;
 	ts->c_profilefunc = NULL;
 }
 
@@ -413,21 +414,21 @@ static void
 _ensure_thread_profiled(PyThreadState *ts)
 {
 	PyThreadState *p = NULL;
-	
+
 	for (p=ts->interp->tstate_head ; p != NULL; p = p->next) {
 		if (ts->c_profilefunc != _yapp_callback)
 			_profile_thread(ts);
-	}	
+	}
 }
 
 static void
 _enum_threads(void (*f) (PyThreadState *))
 {
 	PyThreadState *p = NULL;
-	
+
 	for (p=PyThreadState_GET()->interp->tstate_head ; p != NULL; p = p->next) {
 		f(p);
-	}	
+	}
 }
 
 static int
@@ -458,18 +459,18 @@ _init_profiler(void)
 
 static PyObject*
 profile_event(PyObject *self, PyObject *args)
-{	
+{
 	char *ev;
 	PyObject *arg;
 	PyStringObject *event;
 	PyFrameObject * frame;
-	
+
 	if (!PyArg_ParseTuple(args, "OOO", &frame, &event, &arg)) {
         	return NULL;
     }
-	
-	_ensure_thread_profiled(PyThreadState_GET());	
-	
+
+	_ensure_thread_profiled(PyThreadState_GET());
+
 	ev = PyString_AS_STRING(event);
 
 	if (strcmp("call", ev)==0)
@@ -489,23 +490,23 @@ profile_event(PyObject *self, PyObject *args)
 
 static PyObject*
 start(PyObject *self, PyObject *args)
-{	
+{
 	if (yapprunning) {
 		PyErr_SetString(YappiProfileError, "profiler is already started. yappi is a per-interpreter resource.");
-		return NULL;		
-	}	
+		return NULL;
+	}
 
 	if (!PyArg_ParseTuple(args, "i", &flags.builtins))
 		return NULL;
-	
+
 	if (!_init_profiler()) {
 		PyErr_SetString(YappiProfileError, "profiler cannot be initialized.");
 		return NULL;
 	}
-		
+
 	_enum_threads(&_profile_thread);
-	
-	yapprunning = 1;		
+
+	yapprunning = 1;
 	yapphavestats = 1;
 	time (&yappstarttime);
 	yappstarttick = tickcount();
@@ -514,7 +515,7 @@ start(PyObject *self, PyObject *args)
 	return Py_None;
 }
 
-// extracts the function name from a given pit. Note that pit->co may be 
+// extracts the function name from a given pit. Note that pit->co may be
 // either a PyCodeObject or a descriptive string.
 static char *
 _item2fname(_pit *pt, int stripslashes)
@@ -522,61 +523,69 @@ _item2fname(_pit *pt, int stripslashes)
 	int i, sp;
 	char *buf;
 	PyObject *fname;
-	
+
 	if (!pt)
 		return NULL;
-	
-	if (PyCode_Check(pt->co)) {		
+
+	if (PyCode_Check(pt->co)) {
 		fname =  PyString_FromFormat( "%s.%s:%d",
 				PyString_AS_STRING(((PyCodeObject *)pt->co)->co_filename),
 				PyString_AS_STRING(((PyCodeObject *)pt->co)->co_name),
-				((PyCodeObject *)pt->co)->co_firstlineno );			
-	} else {	
+				((PyCodeObject *)pt->co)->co_firstlineno );
+	} else {
 		fname = pt->co;
 	}
-	
+
 	// get the basename
 	sp = 0;
 	buf = PyString_AS_STRING(fname); // TODO:memleak on buf?
 	for (i=strlen(buf);i>-1;i--) {
-		if ( (buf[i] == 92) || (buf[i] == 47) ) {		
+		if ( (buf[i] == 92) || (buf[i] == 47) ) {
 			sp = i+1;
 			break;
 		}
 	}
-	
+
 	//DECREF should not be done on builtin funcs.
 	//TODO: maybe this is problematic, too?
 	//have not seen any problem, yet, in live.
 	if (PyCode_Check(pt->co)) {
 		Py_DECREF(fname);
 	}
-	return &buf[sp];
+
+    //testing
+    buf = &buf[sp];
+    //if (strlen(buf) >= FUNC_NAME_LEN-1) {
+    //   buf[FUNC_NAME_LEN-1] = '\0';
+    //}
+    //testing
+
+	return buf;
 }
 
 static int
 _pitenumstat(_hitem *item, void * arg)
-{	
+{
 	long long cumdiff;
 	PyObject *efn;
 	char *fname;
 	_pit *pt;
-	
-	pt = (_pit *)item->val;	
+
+	pt = (_pit *)item->val;
 	if (!pt->ttotal)
 		return 0;
-	
+
 	cumdiff = pt->ttotal - pt->tsubtotal;
 	efn = (PyObject *)arg;
-		
-	fname = _item2fname(pt, 0);	
+
+	fname = _item2fname(pt, 0);
 	if (!fname)
 		fname = "N/A";
 
 	// We may have MT issues here!!! declaring a preenum func in yappi.py
 	// does not help as we need a per-profiler sync. object for this. This means
 	// additional complexity and additional overhead. Any idea on this?
-	// Do we really have an mt issue here? The parameters that are sent to the 
+	// Do we really have an mt issue here? The parameters that are sent to the
 	// function does not directly use the same ones, they will copied over to the VM.
 	PyObject_CallFunction(efn, "((sKff))", fname,
 				pt->callcount, pt->ttotal * tickfactor(),
@@ -615,6 +624,13 @@ _yzipstr(char *s, int size)
 void
 _yformat_string(char *a, char *s, int size)
 {
+    int slen;
+
+    slen = strlen(a);
+    if (slen >= size-1) {
+       a[size-1] = '\0';
+    }
+
 	_ystrmovtoend(&s);
 	sprintf(s, "%s", a);
 	_yzipstr(s, size);
@@ -665,7 +681,7 @@ _create_statitem(char *fname, unsigned long callcount, double ttot, double tsub,
 	memset(si->fname, 0, FUNC_NAME_LEN);
 	memset(si->result, 0, LINE_LEN);
 
-	_yformat_string(fname, si->fname, FUNC_NAME_LEN);
+    _yformat_string(fname, si->fname, FUNC_NAME_LEN);
 	si->callcount = callcount;
 	si->ttot = ttot;
 	si->tsub = tsub;
@@ -673,10 +689,11 @@ _create_statitem(char *fname, unsigned long callcount, double ttot, double tsub,
 
 	// generate the result string field.
 	_yformat_string(fname, si->result, FUNC_NAME_LEN);
-	_yformat_ulong(callcount, si->result, INT_COLUMN_LEN);
+    _yformat_ulong(callcount, si->result, INT_COLUMN_LEN);
 	_yformat_double(ttot, si->result, DOUBLE_COLUMN_LEN);
 	_yformat_double(tsub, si->result, DOUBLE_COLUMN_LEN);
 	_yformat_double(tavg, si->result, DOUBLE_COLUMN_LEN);
+
 
 	return si;
 }
@@ -692,7 +709,7 @@ _insert_stats_internal(_statnode *sn, int sorttype)
 	prev = NULL;
 	p = statshead;
 	while(p) {
-		//dprintf("sn:%p, sn->it:%p : p:%p, p->it:%p.\n", sn, sn->it, p, p->it);	
+		//dprintf("sn:%p, sn->it:%p : p:%p, p->it:%p.\n", sn, sn->it, p, p->it);
 		if (sorttype == STAT_SORT_TIME_TOTAL) {
 			if (sn->it->ttot > p->it->ttot)
 				break;
@@ -712,7 +729,7 @@ _insert_stats_internal(_statnode *sn, int sorttype)
 		prev = p;
 		p = p->next;
 	}
-	
+
 	// insert at head
 	if (!prev) {
 		sn->next = statshead;
@@ -762,22 +779,22 @@ _clear_stats_internal(void)
 
 static int
 _pitenumstat2(_hitem *item, void * arg)
-{	
+{
 	_pit *pt;
 	char *fname;
 	_statitem *si;
 	long long cumdiff;
 	_statnode *sni;
-	
-	pt = (_pit *)item->val;	
+
+	pt = (_pit *)item->val;
 	if (!pt->ttotal)
 		return 0;
-		
+
 	cumdiff = pt->ttotal - pt->tsubtotal;
 	fname = _item2fname(pt, 1);
 	if (!fname)
 		fname = "N/A";
-	
+
 	si = _create_statitem(fname, pt->callcount, pt->ttotal * tickfactor(),
 			cumdiff * tickfactor(), pt->ttotal * tickfactor() / pt->callcount);
 	if (!si)
@@ -786,20 +803,20 @@ _pitenumstat2(_hitem *item, void * arg)
 	if (!sni)
 		return 1; // abort enumeration
 	sni->it = si;
-	
+
 	_insert_stats_internal(sni, (int)arg);
-		
+
 	return 0;
 }
 
-static int 
+static int
 _pitenumdel(_hitem *item, void *arg)
-{ 
+{
 	_del_pit((_pit *)item->val);
 	return 0;
 }
 
-static int 
+static int
 _ctxenumdel(_hitem *item, void *arg)
 {
 	_del_ctx(((_ctx *)item->val) );
@@ -810,14 +827,14 @@ static int
 _ctxenumstat(_hitem *item, void *arg)
 {
 	char *fname, *tcname;
-	_ctx * ctx;	
+	_ctx * ctx;
 	char temp[LINE_LEN];
 	PyObject *buf;
-	
+
 	ctx = (_ctx *)item->val;
-	
+
 	fname = _item2fname(ctx->last_pit, 1);
-	
+
 	if (!fname)
 		fname = "N/A";
 
@@ -840,20 +857,20 @@ _ctxenumstat(_hitem *item, void *arg)
 
 	if (PyList_Append((PyObject *)arg, buf) < 0)
 		return 0; // just continue.
-	
+
 	return 0;
 }
 
 static PyObject*
 stop(PyObject *self, PyObject *args)
-{	
+{
 	if (!yapprunning) {
 		PyErr_SetString(YappiProfileError, "profiler is not started yet.");
 		return NULL;
-	}	
+	}
 
 	_enum_threads(&_unprofile_thread);
-	
+
 	yapprunning = 0;
 	yappstoptick = tickcount();
 
@@ -865,9 +882,9 @@ static PyObject*
 clear_stats(PyObject *self, PyObject *args)
 {
 	if (yapprunning) {
-		PyErr_SetString(YappiProfileError, 
+		PyErr_SetString(YappiProfileError,
 			"profiler is running. Stop profiler before clearing stats.");
-		return NULL;		
+		return NULL;
 	}
 
 	henum(pits, _pitenumdel, NULL);
@@ -880,7 +897,7 @@ clear_stats(PyObject *self, PyObject *args)
 	yappinitialized = 0;
 	yapphavestats = 0;
 
-	YMEMCHECK();
+	YMEMLEAKCHECK();
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -924,18 +941,18 @@ get_stats(PyObject *self, PyObject *args)
 
 
 	// enum and present stats in a linked list.(statshead)
-	henum(pits, _pitenumstat2, (void *)type);	
+	henum(pits, _pitenumstat2, (void *)type);
 	_order_stats_internal(order);
 
 	li = PyList_New(0);
 	if (!li)
-		goto err;	
+		goto err;
 	if (PyList_Append(li, PyString_FromString(STAT_HEADER_STR)) < 0)
 		goto err;
-		
+
 	fcnt = 0;
 	p = statshead;
-	while(p){ 
+	while(p){
 		// limit reached?
 		if (limit != STAT_SHOW_ALL) {
 			if (fcnt == limit)
@@ -946,11 +963,11 @@ get_stats(PyObject *self, PyObject *args)
 			goto err;
 		if (PyList_Append(li, buf) < 0)
 			goto err;
-		
+
 		Py_DECREF(buf);
 		fcnt++;
 		p = p->next;
-	}	
+	}
 
 	if (PyList_Append(li, PyString_FromString(STAT_FOOTER_STR)) < 0)
 		goto err;
@@ -989,7 +1006,7 @@ get_stats(PyObject *self, PyObject *args)
 
 	// clear the internal pit stat items that are generated temporarily.
 	_clear_stats_internal();
-	
+
 	return li;
 err:
 	_clear_stats_internal();
@@ -1002,25 +1019,25 @@ static PyObject*
 enum_stats(PyObject *self, PyObject *args)
 {
 	PyObject *enumfn;
-	
+
 	if (!yapphavestats) {
 		PyErr_SetString(YappiProfileError, "profiler do not have any statistics. not started?");
 		return NULL;
-	}		
+	}
 
 	if (!PyArg_ParseTuple(args, "O", &enumfn)) {
 		PyErr_SetString(YappiProfileError, "invalid param to enum_stats");
 		return NULL;
-	}	
+	}
 
 	if (!PyCallable_Check(enumfn)) {
 	   	PyErr_SetString(YappiProfileError, "enum function must be callable");
 	   	return NULL;
     }
-		
+
 	henum(pits, _pitenumstat, enumfn);
 	//_print_footer();
-		
+
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -1057,7 +1074,7 @@ init_yappi(void)
 	PyModule_AddIntConstant(m, "SORTORDER_ASCENDING", STAT_SORT_ASCENDING);
 	PyModule_AddIntConstant(m, "SORTORDER_DESCENDING", STAT_SORT_DESCENDING);
 	PyModule_AddIntConstant(m, "SHOW_ALL", STAT_SHOW_ALL);
-	
+
 	// init the profiler memory and internal constants
 	yappinitialized = 0;
 	yapphavestats = 0;

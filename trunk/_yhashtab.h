@@ -6,18 +6,9 @@
 #ifndef YHASHTAB_H
 #define YHASHTAB_H
 
-#ifndef _MSC_VER
-#include "stdint.h"
-#endif
-
-#include "assert.h"
-#include "stdlib.h"
-
 #define HSIZE(n) (1<<n)
 #define HMASK(n) (HSIZE(n)-1)
 #define SWAP(a, b) (((a) ^= (b)), ((b) ^= (a)), ((a) ^= (b)))
-#define SWAPITEM(x, y) ((SWAP(x->key, y->key)), (SWAP(x->val, y->val)), (SWAP(x->free, y->free)), (SWAP(x->accesscount, y->accesscount)) )
-#define INITITEM(x, k, v) ((x->key = k), (x->val = v), (x->free = 0), (x->accesscount = 0))
 
 #define HLOADFACTOR 0.75
 
@@ -25,7 +16,6 @@ struct _hitem{
     int key;
     int val;
     int free; // for recycling.
-	int accesscount;
     struct _hitem *next;
 };
 typedef struct _hitem _hitem;
@@ -46,11 +36,5 @@ int hadd(_htab *ht, int key, int val);
 void henum(_htab *ht, int (*fn) (_hitem *item, void *arg), void *arg);
 int hcount(_htab *ht);
 void hfree(_htab *ht, _hitem *item);
-
-// used for testing purposes.
-#ifdef YDEBUG
-void hdisp(_htab *ht);
-void hsanity(_htab *ht);
-#endif
 
 #endif
