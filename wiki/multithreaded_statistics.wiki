@@ -1,10 +1,12 @@
+*Question:*
+
 Hi,
 
 the stats printed out are a bit odd for me. I ran the app with time
 command to check the full running time:
 
 user@localhost:~/$ time ../bin/app
-
+{{{
 ...
 
 threading.py.wait:364                25       4,598801   0,000735   0,183952
@@ -21,7 +23,7 @@ yappi overhead: 0,635764/3,631703(%0,000018)
 real    0m4.815s
 user    0m2.528s
 sys     0m0.628s
-
+}}}
 The 3rd column, labelled 'ttot' means the total running time of the
 given method summarized in all threads, right? The 29 seconds seems
 wrong for me, the app ended in 5 seconds really, including yappi
@@ -33,12 +35,13 @@ but this wait doesn't eat CPU time.
 		
 Mátyás János
 		
-
+*Answer:*
 
 Hi Matyas,
 
 I thought about this a lot.Yes you are right and this is intended. Unfortunately there is no easy/platform independent way to get real thread execution time means the ttot is not the real CPU time of the thread.See the 29 secs means that function is executed 29 secs totally in all threads like just you said. See the example below:
 
+{{{
 import time
 import yappi
 import threading
@@ -53,15 +56,17 @@ for i in range(20):
     t.start()
 time.sleep(2)
 yappi.print_stats()
+}}}
 
 The total time of the application is 2 secs, but let's see what yappi gives:
-
+{{{
 name                                 ccnt     ttot       tsub       tavg
-..
+...
 threading.py.__stop:539              20       0.006699   0.000926   0.000335
 t.py.run:6                           20       19.99444.. 19.99444.. 0.999722
 threading.py._is_owned:198           20       0.000406   0.000406   0.000020
-..
+...
+}}}
 
 Even we spent totaly 2 secs, yappi shows the total time spent in that function 20 secs, this is because I/O blocking functions are very very hard to profile(Queue.get() is a blocking call waiting on a condition variable). In Linux there are ways to get them but need recent versions of glibc. Even some old Java Profilers like JPROF have these kind of problems because of MT profiling.(I don't see it as a problem tough, Linux's own "top" tool still cannot profile per thread utilization)
 
