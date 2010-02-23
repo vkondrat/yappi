@@ -5,8 +5,9 @@ Hi,
 the stats printed out are a bit odd for me. I ran the app with time
 command to check the full running time:
 
-user@localhost:~/$ time ../bin/app
 {{{
+user@localhost:~/$ time ../bin/app
+
 ...
 
 threading.py.wait:364                25       4,598801   0,000735   0,183952
