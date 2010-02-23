@@ -6,7 +6,7 @@
 #endif
 
 // static pool sizes
-#define FL_PIT_SIZE 1000
+#define FL_PIT_SIZE 1
 #define FL_CTX_SIZE 100
 #define HT_PIT_SIZE 10
 #define HT_CTX_SIZE 5
@@ -33,8 +33,8 @@
 #define STAT_SORT_DESCENDING 1
 #define STAT_SHOW_ALL -1
 
-#define STAT_HEADER_STR "\n\nname                                 ccnt     ttot       tsub       tavg"
-#define STAT_FOOTER_STR "\n\ntname          tid    fname                                schedc   ttot"
-#define STAT_FOOTER_STR2 "\n\nstatus     tstart                    fcnt     tcnt     memusage(bytes)"
+#define STAT_HEADER_STR "\n\nname                                 #n       tSUB(real) tTOT       tAVG"
+#define STAT_FOOTER_STR "\n\nname           tid    fname                                sCNT     tTOT"
+#define STAT_FOOTER_STR2 "\n\nstatus     tSTART                    fCNT     tCNT     mem(bytes)"
 
 #endif

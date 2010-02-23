@@ -6,7 +6,9 @@ _flgrow(_freelist *flp)
 {
     int i, newsize;
     void **old;
-   
+	
+	dprintf("flgrow called.\n");
+	
     old = flp->items;
     newsize = flp->size * 2;
     flp->items = ymalloc(newsize * sizeof(void *));
