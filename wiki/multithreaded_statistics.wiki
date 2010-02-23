@@ -36,7 +36,9 @@ but this wait doesn't eat CPU time.
 		
 Mátyás János
 		
+
 *Answer:*
+
 
 Hi Matyas,
 
