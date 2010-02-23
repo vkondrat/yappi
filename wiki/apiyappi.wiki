@@ -23,7 +23,7 @@ yappi.<b>enum_stats</b>(fenum)
 Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked per yappi stat-item. Can only be called if there are any statistics available, meaning profiler had run at least one time and clear_stats() is not called. See the example below:
 {{{
 import yappi
-def enum_stats(stat_entry):
+def estat(stat_entry):
 	print e
 def foo():
 	pass
