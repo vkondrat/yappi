@@ -26,6 +26,7 @@ typedef struct {
 	unsigned long callcount;
 	long long tsubtotal;
 	long long ttotal;
+    int builtin;
 }_pit;
 
 typedef struct {
@@ -88,6 +89,7 @@ _create_pit(void)
 	pit->ttotal = 0;
 	pit->tsubtotal = 0;
 	pit->co = NULL;
+    pit->builtin = 0;
 	return pit;
 }
 
@@ -257,6 +259,8 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 
 	if (PyCFunction_Check(arg)) {
 		cp = _ccode2pit((PyCFunctionObject *)arg);
+        if (cp)
+           cp->builtin = 1; // set builtin flag, will use it while showing stats.
 	} else {
 		cp = _code2pit(frame->f_code);
 	}
@@ -268,7 +272,7 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 		return;
 	}
 
-	spush(context->cs, cp);    
+	spush(context->cs, cp);
 
 	cp->callcount++;
 	context->last_pit = cp;
@@ -305,19 +309,19 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 		dprintf("leaving a frame while callstack is empty.\n");
 		return;
 	}
-	cp = ci->ckey;	pi = shead(context->cs);
+	cp = ci->ckey;	pi = shead(context->cs); // get the head again, parent function in this context.
 	if (!pi) {
 		cp->ttotal += (tickcount() - ci->t0);
 		return;
 	}
 	pp = pi->ckey;
 	elapsed = (tickcount() - ci->t0);
-	if (scount(context->cs, ci->ckey) > 0) {
+	if (scount(context->cs, ci->ckey) > 0) { // for recursive functions
 		cp->tsubtotal -= elapsed;
 	} else {
 		cp->ttotal += elapsed;
 	}
-	pp->tsubtotal += elapsed;
+	pp->tsubtotal += elapsed; // update parent's sub total
 
 	// update ctx stats
 	context->ttotal += elapsed;
@@ -356,13 +360,13 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
 #ifdef PyTrace_C_CALL	/* not defined in Python <= 2.3 */
 
 		case PyTrace_C_CALL:
-			if (PyCFunction_Check(arg) && (flags.builtins))
+			if (PyCFunction_Check(arg))
 			    _call_enter(self, frame, arg);
 			break;
 
 		case PyTrace_C_RETURN:
 		case PyTrace_C_EXCEPTION:
-			if (PyCFunction_Check(arg) && (flags.builtins))
+			if (PyCFunction_Check(arg))
 			    _call_leave(self, frame, arg);
 			break;
 
@@ -582,7 +586,11 @@ _pitenumstat(_hitem *item, void * arg)
 	if (!fname)
 		fname = "N/A";
 
-	// We may have MT issues here!!! declaring a preenum func in yappi.py
+    // do not show builtin pits if specified
+    if  ((!flags.builtins) && (pt->builtin))
+        return 0;
+
+    // We may have MT issues here!!! declaring a preenum func in yappi.py
 	// does not help as we need a per-profiler sync. object for this. This means
 	// additional complexity and additional overhead. Any idea on this?
 	// Do we really have an mt issue here? The parameters that are sent to the
@@ -795,8 +803,13 @@ _pitenumstat2(_hitem *item, void * arg)
 	if (!fname)
 		fname = "N/A";
 
+    // do not show builtins if specified in yappi.start(..)
+    if  ((!flags.builtins) && (pt->builtin))
+        return 0;
+
 	si = _create_statitem(fname, pt->callcount, pt->ttotal * tickfactor(),
 			cumdiff * tickfactor(), pt->ttotal * tickfactor() / pt->callcount);
+
 	if (!si)
 		return 1; // abort enumeration
 	sni = (_statnode *)ymalloc(sizeof(_statnode));
