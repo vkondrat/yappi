@@ -19,10 +19,12 @@ v0.3
 [+] BUGFIX: CURRENTCTX macro can return NULL on rare occassions, handle that.
 [+] BUGFIX: Shows wrong thread class name as we call it in the profile_thread.
 [+] OPTIMIZATION:some hashtable enhancements are done.
-v0.41
+v0.42
 -----
 [+] FIXED: Internal hash table grow leads mem corruption on i686 machines.
 [+] FIXED: Long function names leads to mem corruption in.
 [+] FIXED: setup related problems.
 [+] FIXED:when builtin functions isnot profiled, the parent callers of them might have
 	got invalid time calculations, especially if the builtin is a blocking call.
+[+] FIXED: Issue #10. Package cannot be built on MACOSX when DEBUG_MEM option is specified
+	in compile args.
