@@ -275,7 +275,7 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	spush(context->cs, cp);
 
 	cp->callcount++;
-	
+
 	// do not show builtin pits if specified even in last_pit of the context.
     if  ((!flags.builtins) && (cp->builtin))
         ;
@@ -561,9 +561,9 @@ _item2fname(_pit *pt, int stripslashes)
 	//have not seen any problem, yet, in live.
 	if (PyCode_Check(pt->co)) {
 		Py_DECREF(fname);
-	}    
+	}
     buf = &buf[sp];
-	
+
 	return buf;
 }
 
@@ -699,7 +699,7 @@ _create_statitem(char *fname, unsigned long callcount, double ttot, double tsub,
 	_yformat_string(fname, si->result, FUNC_NAME_LEN);
     _yformat_ulong(callcount, si->result, INT_COLUMN_LEN);
 	_yformat_double(tsub, si->result, DOUBLE_COLUMN_LEN);
-	_yformat_double(ttot, si->result, DOUBLE_COLUMN_LEN);	
+	_yformat_double(ttot, si->result, DOUBLE_COLUMN_LEN);
 	_yformat_double(tavg, si->result, DOUBLE_COLUMN_LEN);
 
 
@@ -910,7 +910,10 @@ clear_stats(PyObject *self, PyObject *args)
 	yappinitialized = 0;
 	yapphavestats = 0;
 
-	YMEMLEAKCHECK();
+// check for mem leaks if DEBUG_MEM is specified
+#ifdef DEBUG_MEM
+    YMEMLEAKCHECK();
+#endif
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -1049,7 +1052,7 @@ enum_stats(PyObject *self, PyObject *args)
     }
 
 	henum(pits, _pitenumstat, enumfn);
-	
+
 	Py_INCREF(Py_None);
 	return Py_None;
 }

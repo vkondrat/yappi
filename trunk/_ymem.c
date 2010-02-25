@@ -1,6 +1,31 @@
 #include "_ymem.h"
 
 static unsigned long memused=0;
+static dnode_t *dhead;
+static unsigned int dsize;
+
+#ifdef DEBUG_MEM
+void YMEMLEAKCHECK(void)
+{
+    dnode_t *v;
+    unsigned int tleak;
+
+    v = dhead;
+    tleak = 0;
+    while(v) {
+        fprintf(stderr, "[YMEM]    Leaked block: (addr:%p) (size:%d)\n", v->ptr, v->size);
+        tleak += v->size;
+        v = v->next;
+    }
+    if (tleak == 0)
+        fprintf(stderr, "[YMEM]    Application currently has no leakage.[%d]\n", dsize);
+    else
+        fprintf(stderr, "[YMEM]    Application currently leaking %d bytes.[%d]\n", tleak, dsize);
+}
+#else
+void YMEMLEAKCHECK(void) {;}
+#endif
+
 
 unsigned long
 ymemusage(void)
