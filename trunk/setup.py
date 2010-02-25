@@ -6,7 +6,7 @@ setup(name="_yappi", version="0.4 beta",
 		#extra_compile_args = ["-D DEBUG_MEM", "-D DEBUG_CALL", "-D YDEBUG"],
 		#extra_compile_args = ["-D YDEBUG"],
 		#extra_compile_args = ["-D DEBUG_CALL"],
-		extra_compile_args = ["-D DEBUG_MEM"],
+		#extra_compile_args = ["-D DEBUG_MEM"],
 		#extra_link_args = ["-lrt"]
 	)],
 	py_modules = ["yappi"])
