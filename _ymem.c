@@ -1,10 +1,12 @@
 #include "_ymem.h"
 
 static unsigned long memused=0;
+
+#ifdef DEBUG_MEM
+
 static dnode_t *dhead;
 static unsigned int dsize;
 
-#ifdef DEBUG_MEM
 void YMEMLEAKCHECK(void)
 {
     dnode_t *v;
@@ -49,7 +51,6 @@ ymalloc(size_t size)
     memused += size;
     *(size_t *)p = size;
 #ifdef DEBUG_MEM
-
     if (dhead)
         dprintf("_ymalloc(%d) called[%p].[old_head:%p]", size, p, dhead->ptr);
     else
