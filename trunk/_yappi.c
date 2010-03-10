@@ -28,6 +28,7 @@ typedef struct {
 	long long tsubtotal;
 	long long ttotal;
     int builtin;
+    long long sample; // sample value of the function for Issue #11
 }_pit; // profile_item
 
 typedef struct {
@@ -93,6 +94,7 @@ _create_pit(void)
 	pit->tsubtotal = 0;
 	pit->co = NULL;
     pit->builtin = 0;
+    pit->sample = 0;
 	return pit;
 }
 
@@ -322,17 +324,16 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 		return;
 	}
 
-
     // FIX: Issue #11
     // do not measure time if cpc value is not reached. This will reduce the profiler
     // overhead dramatically while giving away some accuracy. calc. ttotal at least once.
 	spush(context->cs, cp);
     hci = shead(context->cs); // get the pushed item
-    if ((++context->cpc >= flags.timing_sample) || (!cp->ttotal)) {
+    if ((++context->cpc >= flags.timing_sample) || (!cp->sample)) {
 	   hci->t0 = tickcount();
        context->cpc = 0; // reset the cpc.
     } else {
-       hci->t0 = 0;
+       hci->t0 = 0; // we don't want to measure time event for this push.
     }
 
 	cp->callcount++;
@@ -382,10 +383,13 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
     // FIX: Issue #11
 	// if ci->t0 is zero then this means, that we push the function to callstack
     // but do not want to measure time events.
-    if (ci->t0 == 0) {
-       elapsed = 0;
+    if (ci->t0 == 0){
+        elapsed = cp->sample;
     } else {
-       elapsed = tickcount() - ci->t0;
+        elapsed = tickcount() - ci->t0;
+        if (!cp->sample) {
+           cp->sample = elapsed;
+        }
     }
 
     // get the parent function in the callstack	pi = shead(context->cs);
@@ -867,8 +871,8 @@ _pitenumstat2(_hitem *item, void * arg)
     if  ((!flags.builtins) && (pt->builtin))
         return 0;
 
-	si = _create_statitem(fname, pt->callcount, pt->ttotal * tickfactor() * flags.timing_sample,
-			cumdiff * tickfactor() * flags.timing_sample, (pt->ttotal * tickfactor() * flags.timing_sample) / pt->callcount);
+	si = _create_statitem(fname, pt->callcount, pt->ttotal * tickfactor(),
+			cumdiff * tickfactor(), (pt->ttotal * tickfactor()) / pt->callcount);
 
 	if (!si)
 		return 1; // abort enumeration
