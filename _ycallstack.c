@@ -4,7 +4,7 @@
 #include "_ytiming.h"
 #include "_ystatic.h"
 
-int 
+int
 slen(_cstack *cs)
 {
 	return 1 + cs->head;
@@ -14,27 +14,28 @@ _cstack *
 screate(int size)
 {
 	int i;
-	
-	_cstack *cs = (_cstack *)ymalloc(sizeof(_cstack));
+	_cstack *cs;
+
+	cs = (_cstack *)ymalloc(sizeof(_cstack));
 	if (!cs)
 		return NULL;
 	cs->_items = ymalloc(size * sizeof(_cstackitem));
 	if (cs->_items == NULL) {
 		yfree(cs);
 		return NULL;
-	}	
+	}
 	cs->_counts = htcreate(HT_CS_COUNT_SIZE);
 	if (!cs->_counts) {
 		yfree(cs->_items);
 		yfree(cs);
 		return NULL;
 	}
-	
+
 	for(i=0;i<size;i++) {
 		cs->_items[i].ckey = 0;
 		cs->_items[i].t0 = 0;
 	}
-	
+
 	cs->size = size;
 	cs->head = -1;
 	return cs;
@@ -44,8 +45,9 @@ static int
 _sgrow(_cstack * cs)
 {
 	int i;
-	
-	_cstack *dummy = screate(cs->size*2);
+	_cstack *dummy;
+
+	dummy = screate(cs->size*2);
 	if(!dummy)
 		return 0;
 
@@ -55,37 +57,35 @@ _sgrow(_cstack * cs)
 	}
 	yfree(cs->_items);
 	cs->_items = dummy->_items;
-	cs->size = dummy->size; 
+	cs->size = dummy->size;
 	htdestroy(dummy->_counts);
-	yfree(dummy);	
+	yfree(dummy);
 	return 1;
 }
 
-void 
+void
 sdestroy(_cstack * cs)
 {
-	htdestroy(cs->_counts);	
-	yfree(cs->_items);	
-	yfree(cs);	
+	htdestroy(cs->_counts);
+	yfree(cs->_items);
+	yfree(cs);
 }
 
 
 int
 spush(_cstack *cs, void *ckey)
-{ 
+{
 	_hitem *it;
 	_cstackitem *ci;
-	
-	
+
 	if (cs->head >= cs->size-1) {
 		if (!_sgrow(cs))
 			return 0;
 	}
-	
+
 	ci = &cs->_items[++cs->head];
 	ci->ckey = ckey;
-	ci->t0 = tickcount();
-	
+
 	it = hfind(cs->_counts, (uintptr_t)ckey);
 	if (it) {
 		it->val++;
@@ -96,16 +96,16 @@ spush(_cstack *cs, void *ckey)
 	return 1;
 }
 
-_cstackitem * 
+_cstackitem *
 spop(_cstack * cs)
 {
 	int v;
 	_cstackitem *ci;
 	_hitem *it;
-	
-	if (cs->head < 0)	
+
+	if (cs->head < 0)
 		return NULL;
-		
+
 	ci = &cs->_items[cs->head--];
 	it = hfind(cs->_counts, (uintptr_t)ci->ckey);
 	if (it) {
@@ -113,23 +113,23 @@ spop(_cstack * cs)
 		if (v == 0) {
 			hfree(cs->_counts, it);
 		}
-		it->val = v;		
-	}	
+		it->val = v;
+	}
 	return ci;
 }
 
-_cstackitem * 
+_cstackitem *
 shead(_cstack * cs)
 {
-	if (cs->head < 0)	
+	if (cs->head < 0)
 		return NULL;
-		
+
 	return &cs->_items[cs->head];
 }
 
 // returns the number of occurrences of the ckey in the current
 // callstack structure. -1 is returned if this is the first time.
-int 
+int
 scount(_cstack * cs, void *ckey)
 {
 	_hitem *it = hfind(cs->_counts, (uintptr_t)ckey);
