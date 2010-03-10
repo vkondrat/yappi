@@ -384,12 +384,10 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	// if ci->t0 is zero then this means, that we push the function to callstack
     // but do not want to measure time events.
     if (ci->t0 == 0){
-        elapsed = cp->sample;
+        elapsed = cp->sample; // use the previous sample value.
     } else {
         elapsed = tickcount() - ci->t0;
-        if (!cp->sample) {
-           cp->sample = elapsed;
-        }
+        cp->sample = elapsed;
     }
 
     // get the parent function in the callstack	pi = shead(context->cs);
