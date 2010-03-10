@@ -10,7 +10,9 @@ This function will start yappi and all threads in the current interpreter instan
 
 Function will take an optional parameter named *builtins*. As the name suggests, this means we also want to profile builtin functions used by standart modules. It is *False* by *default*.
 
-The second param is *timing_sample*. This param can be used further to decrease profiler runtime by giving away timing accuracy. On every timing_sample value timing measurements will be done, other times yappi will use a previous timing sample of the same function. There is no universal value for this param, just profile your own application and select the best value that suits you as the tradeoff is very application dependant. It is *1* by *default* which means every function call annonated and time measurements are calculated.	
+The second param is *timing_sample*. This param can be used further to decrease profiler runtime by giving away timing accuracy. On every timing_sample value timing measurements will be done, other times yappi will use a previous timing sample of the same function. There is no universal value for this param, just profile your own application and select the best value that suits you as the tradeoff is very application dependant. It is *1* by *default* which means every function call annonated and time measurements are calculated.
+ 
+*Please do not mess with this value unless you have very specific reasons for faster profile runtime.*	
 
 <font face='Courier New'>
 yappi.<b>stop</b>()
