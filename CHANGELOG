@@ -28,3 +28,20 @@ v0.42
 	got invalid time calculations, especially if the builtin is a blocking call.
 [+] FIXED: Issue #10. Package cannot be built on MACOSX when DEBUG_MEM option is specified
 	in compile args.
+v0.43
+-----
+[+] FIXED:OPTIMIZATION: Issue #11: yappi overhead caculation code decrease profiler runtime by 2x-3x. Removed the
+                   overhead and yappi now runs the 1.1x times of the Python cProfile profiler even with
+                   single-threaded CPU insentive applications in which cProfile is aimed for.
+[+] OPTIMIZATION:  Issue #11: Added timing_sample value to yappi.start() function. This param can be used
+				   further to decrease profiler runtime by giving away timing accuracy. On every timing_sample
+				   value timing measurements will be done, other times yappi will use a previous timing sample 
+				   of the same function. There is no universal value for this param, just profile your own 
+				   application and select the best value that suits you as the tradeoff is very application 
+				   dependant. However, bigger params can make spped up profiler runtime by 2x-3x!
+[+] FIXED: Hash table free algorithm do not recycle free nodes when two recursive functions called subsequently.
+           This may lead to exponantial ttotal calculation of a function.
+[+] FIXED: Issue #13: Fixed to show the year time of the profiler start time.
+[+] FIXED: Issue #12: _callstack.c file does not compile on MSVC compiler.
+[+] OPTIMIZATION: Change _ystatic.h.Tune static mem pools for internal hash tables
+                  and call stack.
