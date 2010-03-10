@@ -25,7 +25,7 @@ _hgrow(_htab *ht)
 			it = hfind(dummy, p->key);
 			if (!it)
 				return 0;
-			
+
 			it->free = p->free;
             yfree(p);
             p = next;
@@ -110,7 +110,7 @@ hadd(_htab *ht, int key, int val)
     p = ht->_table[h];
     new = NULL;
     while(p) {
-        if (p->key == key)
+        if ((p->key == key) && (!p->free))
             return 0;
         if (p->free)
             new = p;

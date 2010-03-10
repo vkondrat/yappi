@@ -21,26 +21,29 @@
 // profiler related
 #define CURRENTCTX _thread2ctx(frame->f_tstate)
 
+
 typedef struct {
 	PyObject *co; // CodeObject or MethodDef descriptive string.
 	unsigned long callcount;
 	long long tsubtotal;
 	long long ttotal;
     int builtin;
-}_pit;
+}_pit; // profile_item
 
 typedef struct {
 	_cstack *cs;
 	long id;
 	_pit *last_pit;
+    int cpc; // 'current push count' of the current context callstack
 	unsigned long sched_cnt;
 	long long ttotal;
 	char *class_name;
-}_ctx;
+}_ctx; // context
 
 typedef struct {
 	int builtins;
-}_flag;
+    int timing_sample;
+}_flag; // flags passed from yappi.start()
 
 
 // stat related definitions
@@ -51,21 +54,21 @@ typedef struct {
 	double tavg;
 	char result[LINE_LEN];
     char fname[FUNC_NAME_LEN];
-}_statitem;
+}_statitem; //statitem created while getting stats
 
 
 struct _stat_node_t{
 	_statitem *it;
 	struct _stat_node_t *next;
 };
-typedef struct _stat_node_t _statnode;
+typedef struct _stat_node_t _statnode; // linked list used for appending stats while
+                                       // getting stats
 
 // profiler global vars
 static PyObject *YappiProfileError;
 static _statnode *statshead;
 static _htab *contexts;
 static _htab *pits;
-static long long yappoverhead; 	// total profiler overhead
 static _flag flags;
 static _freelist *flpit;
 static _freelist *flctx;
@@ -108,6 +111,49 @@ _create_ctx(void)
 	ctx->id = 0;
 	ctx->class_name = NULL;
 	return ctx;
+}
+
+
+// extracts the function name from a given pit. Note that pit->co may be
+// either a PyCodeObject or a descriptive string.
+static char *
+_item2fname(_pit *pt, int stripslashes)
+{
+	int i, sp;
+	char *buf;
+	PyObject *fname;
+
+	if (!pt)
+		return NULL;
+
+	if (PyCode_Check(pt->co)) {
+		fname =  PyString_FromFormat( "%s.%s:%d",
+				PyString_AS_STRING(((PyCodeObject *)pt->co)->co_filename),
+				PyString_AS_STRING(((PyCodeObject *)pt->co)->co_name),
+				((PyCodeObject *)pt->co)->co_firstlineno );
+	} else {
+		fname = pt->co;
+	}
+
+	// get the basename
+	sp = 0;
+	buf = PyString_AS_STRING(fname); // TODO:memleak on buf?
+	for (i=strlen(buf);i>-1;i--) {
+		if ( (buf[i] == 92) || (buf[i] == 47) ) {
+			sp = i+1;
+			break;
+		}
+	}
+
+	//DECREF should not be done on builtin funcs.
+	//TODO: maybe this is problematic, too?
+	//have not seen any problem, yet, in live.
+	if (PyCode_Check(pt->co)) {
+		Py_DECREF(fname);
+	}
+    buf = &buf[sp];
+
+	return buf;
 }
 
 char *
@@ -164,9 +210,10 @@ _del_pit(_pit *pit)
 static _pit *
 _ccode2pit(void *cco)
 {
-	PyCFunctionObject *cfn = cco;
+	PyCFunctionObject *cfn;
 	_hitem *it;
 
+    cfn = cco;
 	it = hfind(pits, (uintptr_t)cco);
 	if (!it) {
 		_pit *pit = _create_pit();
@@ -248,9 +295,11 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 	_ctx *context;
 	_pit *cp;
 	PyObject *last_type, *last_value, *last_tb;
+    _cstackitem *hci;
+
 	PyErr_Fetch(&last_type, &last_value, &last_tb);
 
-	context = CURRENTCTX;
+    context = CURRENTCTX;
 
 	if (!context) {
 		yerr("current context not found in table.");
@@ -263,6 +312,7 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
            cp->builtin = 1; // set builtin flag, will use it while showing stats.
 	} else {
 		cp = _code2pit(frame->f_code);
+        //yerr("called %s, %d, %d\n", PyString_AS_STRING(((PyCodeObject *)cp->co)->co_name),slen(context->cs), hcount(pits));
 	}
 
 	// something went wrong. No mem, or another error. we cannot find
@@ -272,7 +322,18 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
 		return;
 	}
 
+
+    // FIX: Issue #11
+    // do not measure time if cpc value is not reached. This will reduce the profiler
+    // overhead dramatically while giving away some accuracy. calc. ttotal at least once.
 	spush(context->cs, cp);
+    hci = shead(context->cs); // get the pushed item
+    if ((++context->cpc >= flags.timing_sample) || (!cp->ttotal)) {
+	   hci->t0 = tickcount();
+       context->cpc = 0; // reset the cpc.
+    } else {
+       hci->t0 = 0;
+    }
 
 	cp->callcount++;
 
@@ -315,19 +376,43 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 		dprintf("leaving a frame while callstack is empty.\n");
 		return;
 	}
-	cp = ci->ckey;	pi = shead(context->cs); // get the head again, parent function in this context.
-	if (!pi) {
-		cp->ttotal += (tickcount() - ci->t0);
+
+	cp = ci->ckey; // current pit pointer
+
+    // FIX: Issue #11
+	// if ci->t0 is zero then this means, that we push the function to callstack
+    // but do not want to measure time events.
+    if (ci->t0 == 0) {
+       elapsed = 0;
+    } else {
+       elapsed = tickcount() - ci->t0;
+    }
+
+    // get the parent function in the callstack	pi = shead(context->cs);
+
+	// no head this is the first function in the callstack
+    if (!pi) {
+		cp->ttotal += elapsed;
 		return;
 	}
-	pp = pi->ckey;
-	elapsed = (tickcount() - ci->t0);
-	if (scount(context->cs, ci->ckey) > 0) { // for recursive functions
-		cp->tsubtotal -= elapsed;
+
+    //if (!PyCFunction_Check(arg)) {
+       //yerr("called %s from %s, %d\n", PyString_AS_STRING(((PyCodeObject *)cp->co)->co_name), PyString_AS_STRING(((PyCodeObject *)((_pit*)pi->ckey)->co)->co_name),slen(context->cs));
+    //}
+
+    // are we leaving a recursive function that is already in the callstack?
+    // then extract the elapsed from subtotal of the the current pit(profile item).
+	if (scount(context->cs, ci->ckey) > 0) {
+        cp->tsubtotal -= elapsed;
+        context->ttotal -= elapsed;
 	} else {
-		cp->ttotal += elapsed;
+	    cp->ttotal += elapsed;
 	}
-	pp->tsubtotal += elapsed; // update parent's sub total
+
+    // update parent's sub total if recursive above code will extract the subtotal and
+    // below code will have no effect.
+    pp = pi->ckey;
+    pp->tsubtotal += elapsed;
 
 	// update ctx stats
 	context->ttotal += elapsed;
@@ -353,8 +438,6 @@ static int
 _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
 		  PyObject *arg)
 {
-
-	long long t0 = tickcount();
 	switch (what) {
 		case PyTrace_CALL:
 			_call_enter(self, frame, arg);
@@ -380,7 +463,6 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
 		default:
 			break;
 	}
-	yappoverhead += tickcount() - t0;
 	return 0;
 }
 
@@ -453,7 +535,6 @@ _init_profiler(void)
 		pits = htcreate(HT_PIT_SIZE);
 		if (!pits)
 			return 0;
-		yappoverhead = 0;
 		flpit = flcreate(sizeof(_pit), FL_PIT_SIZE);
 		if (!flpit)
 			return 0;
@@ -506,8 +587,13 @@ start(PyObject *self, PyObject *args)
 		return NULL;
 	}
 
-	if (!PyArg_ParseTuple(args, "i", &flags.builtins))
+	if (!PyArg_ParseTuple(args, "ii", &flags.builtins, &flags.timing_sample))
 		return NULL;
+
+    if (flags.timing_sample < 1) {
+        PyErr_SetString(YappiProfileError, "profiler timing sample value cannot be less than 1.");
+	    return NULL;
+    }
 
 	if (!_init_profiler()) {
 		PyErr_SetString(YappiProfileError, "profiler cannot be initialized.");
@@ -525,46 +611,16 @@ start(PyObject *self, PyObject *args)
 	return Py_None;
 }
 
-// extracts the function name from a given pit. Note that pit->co may be
-// either a PyCodeObject or a descriptive string.
-static char *
-_item2fname(_pit *pt, int stripslashes)
+
+static long long
+_calc_cumdiff(long long a, long long b)
 {
-	int i, sp;
-	char *buf;
-	PyObject *fname;
+    long long r;
 
-	if (!pt)
-		return NULL;
-
-	if (PyCode_Check(pt->co)) {
-		fname =  PyString_FromFormat( "%s.%s:%d",
-				PyString_AS_STRING(((PyCodeObject *)pt->co)->co_filename),
-				PyString_AS_STRING(((PyCodeObject *)pt->co)->co_name),
-				((PyCodeObject *)pt->co)->co_firstlineno );
-	} else {
-		fname = pt->co;
-	}
-
-	// get the basename
-	sp = 0;
-	buf = PyString_AS_STRING(fname); // TODO:memleak on buf?
-	for (i=strlen(buf);i>-1;i--) {
-		if ( (buf[i] == 92) || (buf[i] == 47) ) {
-			sp = i+1;
-			break;
-		}
-	}
-
-	//DECREF should not be done on builtin funcs.
-	//TODO: maybe this is problematic, too?
-	//have not seen any problem, yet, in live.
-	if (PyCode_Check(pt->co)) {
-		Py_DECREF(fname);
-	}
-    buf = &buf[sp];
-
-	return buf;
+    r = a - b;
+    if (r < 0)
+       return 0;
+    return r;
 }
 
 static int
@@ -576,10 +632,12 @@ _pitenumstat(_hitem *item, void * arg)
 	_pit *pt;
 
 	pt = (_pit *)item->val;
-	if (!pt->ttotal)
-		return 0;
+    // Issue #11 : ttotal may be 0 even if it is not on different timing
+    // sample values
+	//if (!pt->ttotal)
+       //return 0;
 
-	cumdiff = pt->ttotal - pt->tsubtotal;
+	cumdiff = _calc_cumdiff(pt->ttotal, pt->tsubtotal);
 	efn = (PyObject *)arg;
 
 	fname = _item2fname(pt, 0);
@@ -795,10 +853,12 @@ _pitenumstat2(_hitem *item, void * arg)
 	_statnode *sni;
 
 	pt = (_pit *)item->val;
-	if (!pt->ttotal)
-		return 0;
+    // Issue #11 : ttotal may be 0 even if it is not on different timing
+    // sample values
+    //if (!pt->ttotal)
+       //return 0;
 
-	cumdiff = pt->ttotal - pt->tsubtotal;
+    cumdiff = _calc_cumdiff(pt->ttotal, pt->tsubtotal);
 	fname = _item2fname(pt, 1);
 	if (!fname)
 		fname = "N/A";
@@ -807,8 +867,8 @@ _pitenumstat2(_hitem *item, void * arg)
     if  ((!flags.builtins) && (pt->builtin))
         return 0;
 
-	si = _create_statitem(fname, pt->callcount, pt->ttotal * tickfactor(),
-			cumdiff * tickfactor(), pt->ttotal * tickfactor() / pt->callcount);
+	si = _create_statitem(fname, pt->callcount, pt->ttotal * tickfactor() * flags.timing_sample,
+			cumdiff * tickfactor() * flags.timing_sample, (pt->ttotal * tickfactor() * flags.timing_sample) / pt->callcount);
 
 	if (!si)
 		return 1; // abort enumeration
@@ -922,7 +982,8 @@ clear_stats(PyObject *self, PyObject *args)
 static PyObject*
 get_stats(PyObject *self, PyObject *args)
 {
-	char *prof_state;
+
+	char *prof_state,*timestr;
 	_statnode *p;
 	PyObject *buf,*li;
 	int type, order, limit, fcnt;
@@ -1003,22 +1064,21 @@ get_stats(PyObject *self, PyObject *args)
 
 	memset(temp, 0, LINE_LEN);
 	_yformat_string(prof_state, temp, DOUBLE_COLUMN_LEN);
-	_yformat_string(ctime(&yappstarttime), temp, TIMESTR_COLUMN_LEN);
-	_yformat_int(hcount(pits), temp, INT_COLUMN_LEN);
+
+    // FIX: Issue #13.
+    // ctime() string is a static allocated block of char and it is followed by a '\n'
+    // char let's exclude it. See:
+    // http://www.cplusplus.com/reference/clibrary/ctime/ctime/
+    timestr = ctime(&yappstarttime);
+    timestr[strlen(timestr)-1] = '\0';
+
+    _yformat_string(timestr, temp, TIMESTR_COLUMN_LEN);
+    _yformat_int(hcount(pits), temp, INT_COLUMN_LEN);
 	_yformat_int(hcount(contexts), temp, INT_COLUMN_LEN);
 	_yformat_ulong(ymemusage(), temp, INT_COLUMN_LEN);
 
 	if (PyList_Append(li, PyString_FromString(temp)) < 0)
 			goto err;
-
-	if (snprintf(temp, LINE_LEN, "\n\n	yappi overhead: %0.6f/%0.6f(%%%0.6f)\n",
-			yappoverhead * tickfactor(), appttotal * tickfactor(),
-			((yappoverhead * tickfactor() )) / (appttotal) * 100) == -1) {
-		PyErr_SetString(YappiProfileError, "output string cannot be formatted correctly. Stack corrupted?");
-		goto err;
-	}
-	if (PyList_Append(li, PyString_FromString(temp)) < 0)
-		goto err;
 
 	// clear the internal pit stat items that are generated temporarily.
 	_clear_stats_internal();
