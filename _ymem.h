@@ -4,10 +4,10 @@
 #include "stdlib.h"
 #include "_ydebug.h"
 
-struct dnode{
-	void *ptr;
-	unsigned int size;
-	struct dnode *next;
+struct dnode {
+    void *ptr;
+    unsigned int size;
+    struct dnode *next;
 };
 typedef struct dnode dnode_t;
 

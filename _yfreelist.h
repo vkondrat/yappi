@@ -6,7 +6,7 @@ typedef struct {
     int size;
     int chunksize;
     void **items;
-}_freelist;
+} _freelist;
 
 _freelist * flcreate(int chunksize, int size);
 void fldestroy(_freelist *flp);

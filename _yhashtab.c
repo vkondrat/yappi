@@ -16,17 +16,17 @@ _hgrow(_htab *ht)
     dummy = htcreate(ht->logsize+1);
     if (!dummy)
         return 0;
-    for(i=0;i<ht->realsize;i++) {
+    for(i=0; i<ht->realsize; i++) {
         p = ht->_table[i];
         while(p) {
             next = p->next;
             if (!hadd(dummy, p->key, p->val))
                 return 0;
-			it = hfind(dummy, p->key);
-			if (!it)
-				return 0;
+            it = hfind(dummy, p->key);
+            if (!it)
+                return 0;
 
-			it->free = p->free;
+            it->free = p->free;
             yfree(p);
             p = next;
         }
@@ -73,7 +73,7 @@ htcreate(int logsize)
         return NULL;
     }
 
-    for(i=0;i<ht->realsize;i++)
+    for(i=0; i<ht->realsize; i++)
         ht->_table[i] = NULL;
 
     return ht;
@@ -86,7 +86,7 @@ htdestroy(_htab *ht)
     int i;
     _hitem *p, *next;
 
-    for(i=0;i<ht->realsize;i++) {
+    for(i=0; i<ht->realsize; i++) {
         p = ht->_table[i];
         while(p) {
             next = p->next;
@@ -177,7 +177,7 @@ henum(_htab *ht, int (*enumfn)(_hitem *item, void *arg), void *arg)
     int rc, i;
     _hitem *p, *next;
 
-    for(i=0;i<ht->realsize;i++) {
+    for(i=0; i<ht->realsize; i++) {
         p = ht->_table[i];
         while(p) {
             next = p->next;

@@ -25,22 +25,25 @@ void YMEMLEAKCHECK(void)
         fprintf(stderr, "[YMEM]    Application currently leaking %d bytes.[%d]\n", tleak, dsize);
 }
 #else
-void YMEMLEAKCHECK(void) {;}
+void YMEMLEAKCHECK(void)
+{
+    ;
+}
 #endif
 
 
 unsigned long
 ymemusage(void)
 {
-	return memused;
+    return memused;
 }
 
 void *
 ymalloc(size_t size)
 {
-	void *p;
+    void *p;
 #ifdef DEBUG_MEM
-	dnode_t *v;
+    dnode_t *v;
 #endif
 
     p = malloc(size+sizeof(size_t));
