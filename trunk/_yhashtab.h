@@ -12,7 +12,7 @@
 
 #define HLOADFACTOR 0.75
 
-struct _hitem{
+struct _hitem {
     int key;
     int val;
     int free; // for recycling.
@@ -20,14 +20,14 @@ struct _hitem{
 };
 typedef struct _hitem _hitem;
 
-typedef struct{
+typedef struct {
     int realsize;
     int logsize;
     int count;
     int mask;
     int freecount;
     _hitem ** _table;
-}_htab;
+} _htab;
 
 _htab *htcreate(int logsize);
 void htdestroy(_htab *ht);

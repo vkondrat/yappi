@@ -1,6 +1,6 @@
 /*
 
- yappi.py
+ yappi
  Yet Another Python Profiler
 
  Sumer Cip 2009
@@ -18,41 +18,33 @@
 #include "_ystatic.h"
 #include "_ymem.h"
 
-// profiler related
-#define CURRENTCTX _thread2ctx(frame->f_tstate)
 
-
-typedef struct
-{
+typedef struct {
     PyObject *co; // CodeObject or MethodDef descriptive string.
     unsigned long callcount;
     long long tsubtotal;
     long long ttotal;
     int builtin;
-    long long sample; // sample value of the function for Issue #11
+    int cpc;
 } _pit; // profile_item
 
-typedef struct
-{
+typedef struct {
     _cstack *cs;
     long id;
     _pit *last_pit;
-    int cpc; // 'current push count' of the current context callstack
     unsigned long sched_cnt;
     long long ttotal;
     char *class_name;
 } _ctx; // context
 
-typedef struct
-{
+typedef struct {
     int builtins;
     int timing_sample;
 } _flag; // flags passed from yappi.start()
 
 
 // stat related definitions
-typedef struct
-{
+typedef struct {
     unsigned long callcount;
     double ttot;
     double tsub;
@@ -62,8 +54,7 @@ typedef struct
 } _statitem; //statitem created while getting stats
 
 
-struct _stat_node_t
-{
+struct _stat_node_t {
     _statitem *it;
     struct _stat_node_t *next;
 };
@@ -84,7 +75,8 @@ static int yapprunning;
 static time_t yappstarttime;
 static long long yappstarttick;
 static long long yappstoptick;
-static _ctx *last_ctx;
+static _ctx *prev_ctx;
+static _ctx *current_ctx;
 
 static _pit *
 _create_pit(void)
@@ -99,7 +91,7 @@ _create_pit(void)
     pit->tsubtotal = 0;
     pit->co = NULL;
     pit->builtin = 0;
-    pit->sample = 0;
+    pit->cpc = 0;
     return pit;
 }
 
@@ -133,25 +125,20 @@ _item2fname(_pit *pt, int stripslashes)
     if (!pt)
         return NULL;
 
-    if (PyCode_Check(pt->co))
-    {
+    if (PyCode_Check(pt->co)) {
         fname =  PyString_FromFormat( "%s.%s:%d",
                                       PyString_AS_STRING(((PyCodeObject *)pt->co)->co_filename),
                                       PyString_AS_STRING(((PyCodeObject *)pt->co)->co_name),
                                       ((PyCodeObject *)pt->co)->co_firstlineno );
-    }
-    else
-    {
+    } else {
         fname = pt->co;
     }
 
     // get the basename
     sp = 0;
     buf = PyString_AS_STRING(fname); // TODO:memleak on buf?
-    for (i=strlen(buf); i>-1; i--)
-    {
-        if ( (buf[i] == 92) || (buf[i] == 47) )
-        {
+    for (i=strlen(buf); i>-1; i--) {
+        if ( (buf[i] == 92) || (buf[i] == 47) ) {
             sp = i+1;
             break;
         }
@@ -160,8 +147,7 @@ _item2fname(_pit *pt, int stripslashes)
     //DECREF should not be done on builtin funcs.
     //TODO: maybe this is problematic, too?
     //have not seen any problem, yet, in live.
-    if (PyCode_Check(pt->co))
-    {
+    if (PyCode_Check(pt->co)) {
         Py_DECREF(fname);
     }
     buf = &buf[sp];
@@ -228,33 +214,25 @@ _ccode2pit(void *cco)
 
     cfn = cco;
     it = hfind(pits, (uintptr_t)cco);
-    if (!it)
-    {
+    if (!it) {
         _pit *pit = _create_pit();
         if (!pit)
             return NULL;
         if (!hadd(pits, (uintptr_t)cco, (uintptr_t)pit))
             return NULL;
         // built-in FUNCTION?
-        if (cfn->m_self == NULL)
-        {
+        if (cfn->m_self == NULL) {
             PyObject *mod = cfn->m_module;
             char *modname;
-            if (mod && PyString_Check(mod))
-            {
+            if (mod && PyString_Check(mod)) {
                 modname = PyString_AS_STRING(mod);
-            }
-            else if (mod && PyModule_Check(mod))
-            {
+            } else if (mod && PyModule_Check(mod)) {
                 modname = PyModule_GetName(mod);
-                if (modname == NULL)
-                {
+                if (modname == NULL) {
                     PyErr_Clear();
                     modname = "__builtin__";
                 }
-            }
-            else
-            {
+            } else {
                 modname = "__builtin__";
             }
             if (strcmp(modname, "__builtin__") != 0)
@@ -265,18 +243,14 @@ _ccode2pit(void *cco)
                 pit->co = PyString_FromFormat("<%s>",
                                               cfn->m_ml->ml_name);
 
-        }
-        else     // built-in METHOD?
-        {
+        } else { // built-in METHOD?
             PyObject *self = cfn->m_self;
             PyObject *name = PyString_FromString(cfn->m_ml->ml_name);
-            if (name != NULL)
-            {
+            if (name != NULL) {
                 PyObject *mo = _PyType_Lookup((PyTypeObject *)PyObject_Type(self), name);
                 Py_XINCREF(mo);
                 Py_DECREF(name);
-                if (mo != NULL)
-                {
+                if (mo != NULL) {
                     PyObject *res = PyObject_Repr(mo);
                     Py_DECREF(mo);
                     if (res != NULL)
@@ -287,6 +261,7 @@ _ccode2pit(void *cco)
             pit->co = PyString_FromFormat("<built-in method %s>",
                                           cfn->m_ml->ml_name);
         }
+        pit->builtin = 1; // set the bultin here
         return pit;
     }
     return ((_pit *)it->val);
@@ -299,8 +274,7 @@ _code2pit(void *co)
     _hitem *it;
 
     it = hfind(pits, (uintptr_t)co);
-    if (!it)
-    {
+    if (!it) {
         _pit *pit = _create_pit();
         if (!pit)
             return NULL;
@@ -314,56 +288,36 @@ _code2pit(void *co)
 }
 
 static void
-_call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
+_call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg, int ccall)
 {
-    _ctx *context;
     _pit *cp;
     PyObject *last_type, *last_value, *last_tb;
     _cstackitem *hci;
 
     PyErr_Fetch(&last_type, &last_value, &last_tb);
 
-    context = CURRENTCTX;
-
-    if (!context)
-    {
-        yerr("current context not found in table.");
-        return;
-    }
-
-    if (PyCFunction_Check(arg))
-    {
+    if (ccall) {
         cp = _ccode2pit((PyCFunctionObject *)arg);
-        if (cp)
-            cp->builtin = 1; // set builtin flag, will use it while showing stats.
-    }
-    else
-    {
+    } else {
         cp = _code2pit(frame->f_code);
-        //yerr("called %s, %d, %d\n", PyString_AS_STRING(((PyCodeObject *)cp->co)->co_name),slen(context->cs), hcount(pits));
     }
 
     // something went wrong. No mem, or another error. we cannot find
     // a corresponding pit. just run away:)
-    if (!cp)
-    {
-        PyErr_Restore(last_type, last_value, last_tb);
-        return;
+    if (!cp) {
+        yerr("pit not found");
+        goto err;
     }
 
-    // FIX: Issue #11
-    // do not measure time if cpc value is not reached. This will reduce the profiler
-    // overhead dramatically while giving away some accuracy. calc. ttotal at least once.
-    spush(context->cs, cp);
-    hci = shead(context->cs); // get the pushed item
-    if ((++context->cpc >= flags.timing_sample) || (!cp->sample))
-    {
-        hci->t0 = tickcount();
-        context->cpc = 0; // reset the cpc.
+    hci = spush(current_ctx->cs, cp);
+    if (!hci) { // runaway!
+        yerr("spush failed.");
+        goto err;
     }
-    else
-    {
-        hci->t0 = 0; // we don't want to measure time event for this push.
+
+    // do not do timing measures until timing_sample is reached.
+    if (++cp->cpc >= flags.timing_sample) {
+        hci->t0 = tickcount();
     }
 
     cp->callcount++;
@@ -371,20 +325,13 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg)
     // do not show builtin pits if specified even in last_pit of the context.
     if  ((!flags.builtins) && (cp->builtin))
         ;
-    else
-    {
-        context->last_pit = cp;
+    else {
+        current_ctx->last_pit = cp;
     }
 
-    // update ctx stats
-    if (last_ctx != context)
-    {
-        context->sched_cnt++;
-    }
-    last_ctx = context;
-    if (!context->class_name)
-        context->class_name = _get_current_thread_class_name();
+    PyErr_Restore(last_type, last_value, last_tb);
 
+err:
     PyErr_Restore(last_type, last_value, last_tb);
 }
 
@@ -394,81 +341,44 @@ _call_leave(PyObject *self, PyFrameObject *frame, PyObject *arg)
 {
     _pit *cp, *pp;
     _cstackitem *ci,*pi;
-    _ctx *context;
     long long elapsed;
 
-    context = CURRENTCTX;
+    ci = spop(current_ctx->cs);
+    if (!ci) {
+        return; // leaving a frame while callstack is empty
+    }
+    cp = ci->ckey;
 
-    if (!context)
-    {
-        yerr("current context not found in table.");
+    // timing sample reached?
+    if (cp->cpc < flags.timing_sample) {
         return;
     }
 
-    ci = spop(context->cs);
-    if (!ci)
-    {
-        dprintf("leaving a frame while callstack is empty.\n");
-        return;
-    }
-
-    cp = ci->ckey; // current pit pointer
-
-    // FIX: Issue #11
-    // if ci->t0 is zero then this means, that we push the function to callstack
-    // but do not want to measure time events.
-    if (ci->t0 == 0)
-    {
-        elapsed = cp->sample; // use the previous sample value.
-    }
-    else
-    {
-        elapsed = tickcount() - ci->t0;
-        cp->sample = elapsed;
-    }
+    elapsed = tickcount() - ci->t0;
+    cp->cpc = 0;
 
     // get the parent function in the callstack
-    pi = shead(context->cs);
-
-    // no head this is the first function in the callstack
-    if (!pi)
-    {
+    pi = shead(current_ctx->cs);
+    if (!pi) { // no head this is the first function in the callstack?
         cp->ttotal += elapsed;
         return;
     }
-
-    //if (!PyCFunction_Check(arg)) {
-    //yerr("called %s from %s, %d\n", PyString_AS_STRING(((PyCodeObject *)cp->co)->co_name), PyString_AS_STRING(((PyCodeObject *)((_pit*)pi->ckey)->co)->co_name),slen(context->cs));
-    //}
+    pp = pi->ckey;
 
     // are we leaving a recursive function that is already in the callstack?
     // then extract the elapsed from subtotal of the the current pit(profile item).
-    if (scount(context->cs, ci->ckey) > 0)
-    {
+    if (scount(current_ctx->cs, cp) > 0) {
         cp->tsubtotal -= elapsed;
-        context->ttotal -= elapsed;
-    }
-    else
-    {
+        current_ctx->ttotal -= elapsed;
+    } else {
         cp->ttotal += elapsed;
     }
 
     // update parent's sub total if recursive above code will extract the subtotal and
     // below code will have no effect.
-    pp = pi->ckey;
     pp->tsubtotal += elapsed;
 
-    // update ctx stats
-    context->ttotal += elapsed;
-    if (last_ctx != context)
-    {
-        context->sched_cnt++;
-    }
-    last_ctx = context;
-    if (!context->class_name)
-        context->class_name = _get_current_thread_class_name();
-
-    return;
+    current_ctx->ttotal += elapsed;
 }
 
 // context will be cleared by the free list. we do not free it here.
@@ -483,10 +393,16 @@ static int
 _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
                PyObject *arg)
 {
-    switch (what)
-    {
+    // get current ctx
+    current_ctx = _thread2ctx(frame->f_tstate);
+    if (!current_ctx) {
+        yerr("context not found.");
+        return 0;
+    }
+
+    switch (what) {
     case PyTrace_CALL:
-        _call_enter(self, frame, arg);
+        _call_enter(self, frame, arg, 0);
         break;
     case PyTrace_RETURN: // either normally or with an exception
         _call_leave(self, frame, arg);
@@ -496,7 +412,7 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
 
     case PyTrace_C_CALL:
         if (PyCFunction_Check(arg))
-            _call_enter(self, frame, arg);
+            _call_enter(self, frame, arg, 1); // set ccall to true
         break;
 
     case PyTrace_C_RETURN:
@@ -509,7 +425,16 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
     default:
         break;
     }
-    return 0;
+
+    // update ctx statistics
+    if (prev_ctx != current_ctx) {
+        current_ctx->sched_cnt++;
+    }
+    if (!current_ctx->class_name) {
+        current_ctx->class_name = _get_current_thread_class_name();
+    }
+    prev_ctx = current_ctx;
+    return 1;
 }
 
 static void
@@ -531,8 +456,7 @@ _profile_thread(PyThreadState *ts)
     // pooled inside the VM. This is very hecky solution, but there is no
     // efficient and easy way to somehow know that a Python Thread is about
     // to be destructed.
-    if (!hadd(contexts, (uintptr_t)ts, (uintptr_t)ctx))
-    {
+    if (!hadd(contexts, (uintptr_t)ts, (uintptr_t)ctx)) {
         _del_ctx(ctx);
         if (!flput(flctx, ctx))
             yerr("Context cannot be recycled. Possible memory leak.[%d bytes]", sizeof(_ctx));
@@ -554,8 +478,7 @@ _ensure_thread_profiled(PyThreadState *ts)
 {
     PyThreadState *p = NULL;
 
-    for (p=ts->interp->tstate_head ; p != NULL; p = p->next)
-    {
+    for (p=ts->interp->tstate_head ; p != NULL; p = p->next) {
         if (ts->c_profilefunc != _yapp_callback)
             _profile_thread(ts);
     }
@@ -566,8 +489,7 @@ _enum_threads(void (*f) (PyThreadState *))
 {
     PyThreadState *p = NULL;
 
-    for (p=PyThreadState_GET()->interp->tstate_head ; p != NULL; p = p->next)
-    {
+    for (p=PyThreadState_GET()->interp->tstate_head ; p != NULL; p = p->next) {
         f(p);
     }
 }
@@ -577,8 +499,7 @@ _init_profiler(void)
 {
     // already initialized? only after clear_stats() and first time, this flag
     // will be unset.
-    if (!yappinitialized)
-    {
+    if (!yappinitialized) {
         contexts = htcreate(HT_CTX_SIZE);
         if (!contexts)
             return 0;
@@ -593,7 +514,8 @@ _init_profiler(void)
             return 0;
         yappinitialized = 1;
         statshead = NULL;
-        last_ctx = NULL;
+        current_ctx = NULL;
+        prev_ctx = NULL;
     }
     return 1;
 }
@@ -606,8 +528,7 @@ profile_event(PyObject *self, PyObject *args)
     PyStringObject *event;
     PyFrameObject * frame;
 
-    if (!PyArg_ParseTuple(args, "OOO", &frame, &event, &arg))
-    {
+    if (!PyArg_ParseTuple(args, "OOO", &frame, &event, &arg)) {
         return NULL;
     }
 
@@ -633,8 +554,7 @@ profile_event(PyObject *self, PyObject *args)
 static PyObject*
 start(PyObject *self, PyObject *args)
 {
-    if (yapprunning)
-    {
+    if (yapprunning) {
         PyErr_SetString(YappiProfileError, "profiler is already started. yappi is a per-interpreter resource.");
         return NULL;
     }
@@ -642,14 +562,12 @@ start(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "ii", &flags.builtins, &flags.timing_sample))
         return NULL;
 
-    if (flags.timing_sample < 1)
-    {
+    if (flags.timing_sample < 1) {
         PyErr_SetString(YappiProfileError, "profiler timing sample value cannot be less than 1.");
         return NULL;
     }
 
-    if (!_init_profiler())
-    {
+    if (!_init_profiler()) {
         PyErr_SetString(YappiProfileError, "profiler cannot be initialized.");
         return NULL;
     }
@@ -733,8 +651,7 @@ _yzipstr(char *s, int size)
         s[i] = ' ';
     s[size] = '\0'; //terminate the string
 
-    if (len > size-ZIP_DOT_COUNT-ZIP_RIGHT_MARGIN_LEN)
-    {
+    if (len > size-ZIP_DOT_COUNT-ZIP_RIGHT_MARGIN_LEN) {
         for(i=1; i<=ZIP_DOT_COUNT ; i++)
             s[size-i-ZIP_RIGHT_MARGIN_LEN] = '.';
         for(i=1; i<=ZIP_RIGHT_MARGIN_LEN ; i++)
@@ -748,8 +665,7 @@ _yformat_string(char *a, char *s, int size)
     int slen;
 
     slen = strlen(a);
-    if (slen >= size-1)
-    {
+    if (slen >= size-1) {
         a[size-1] = '\0';
     }
 
@@ -830,31 +746,21 @@ _insert_stats_internal(_statnode *sn, int sorttype)
 
     prev = NULL;
     p = statshead;
-    while(p)
-    {
+    while(p) {
         //dprintf("sn:%p, sn->it:%p : p:%p, p->it:%p.\n", sn, sn->it, p, p->it);
-        if (sorttype == STAT_SORT_TIME_TOTAL)
-        {
+        if (sorttype == STAT_SORT_TIME_TOTAL) {
             if (sn->it->ttot > p->it->ttot)
                 break;
-        }
-        else if (sorttype == STAT_SORT_CALL_COUNT)
-        {
+        } else if (sorttype == STAT_SORT_CALL_COUNT) {
             if (sn->it->callcount > p->it->callcount)
                 break;
-        }
-        else if (sorttype == STAT_SORT_TIME_SUB)
-        {
+        } else if (sorttype == STAT_SORT_TIME_SUB) {
             if (sn->it->tsub > p->it->tsub)
                 break;
-        }
-        else if (sorttype == STAT_SORT_TIME_AVG)
-        {
+        } else if (sorttype == STAT_SORT_TIME_AVG) {
             if (sn->it->tavg > p->it->tavg)
                 break;
-        }
-        else if (sorttype == STAT_SORT_FUNC_NAME)
-        {
+        } else if (sorttype == STAT_SORT_FUNC_NAME) {
             if (strcmp(sn->it->fname, p->it->fname) > 0)
                 break;
         }
@@ -863,13 +769,10 @@ _insert_stats_internal(_statnode *sn, int sorttype)
     }
 
     // insert at head
-    if (!prev)
-    {
+    if (!prev) {
         sn->next = statshead;
         statshead = sn;
-    }
-    else
-    {
+    } else {
         sn->next = prev->next;
         prev->next = sn;
     }
@@ -881,17 +784,13 @@ _order_stats_internal(int order)
 {
     _statnode *p,*tmp,*pr;
 
-    if (order == STAT_SORT_DESCENDING)
-    {
+    if (order == STAT_SORT_DESCENDING) {
         ; // nothing to do as internal order is by default descending
-    }
-    else if (order == STAT_SORT_ASCENDING)
-    {
+    } else if (order == STAT_SORT_ASCENDING) {
         // reverse stat linked list
         pr = tmp = NULL;
         p = statshead;
-        while (p != NULL)
-        {
+        while (p != NULL) {
             tmp  = p->next;
             p->next = pr;
             pr = p;
@@ -907,8 +806,7 @@ _clear_stats_internal(void)
     _statnode *p,*next;
 
     p = statshead;
-    while(p)
-    {
+    while(p) {
         next = p->next;
         yfree(p->it);
         yfree(p);
@@ -1011,8 +909,7 @@ _ctxenumstat(_hitem *item, void *arg)
 static PyObject*
 stop(PyObject *self, PyObject *args)
 {
-    if (!yapprunning)
-    {
+    if (!yapprunning) {
         PyErr_SetString(YappiProfileError, "profiler is not started yet.");
         return NULL;
     }
@@ -1029,8 +926,7 @@ stop(PyObject *self, PyObject *args)
 static PyObject*
 clear_stats(PyObject *self, PyObject *args)
 {
-    if (yapprunning)
-    {
+    if (yapprunning) {
         PyErr_SetString(YappiProfileError,
                         "profiler is running. Stop profiler before clearing stats.");
         return NULL;
@@ -1068,30 +964,25 @@ get_stats(PyObject *self, PyObject *args)
 
     li = buf = NULL;
 
-    if (!yapphavestats)
-    {
+    if (!yapphavestats) {
         PyErr_SetString(YappiProfileError, "profiler do not have any statistics. not started?");
         goto err;
     }
 
-    if (!PyArg_ParseTuple(args, "iii", &type, &order, &limit))
-    {
+    if (!PyArg_ParseTuple(args, "iii", &type, &order, &limit)) {
         PyErr_SetString(YappiProfileError, "invalid param to get_stats");
         goto err;
     }
     // sorttype/order/limit is in valid bounds?
-    if ((type < 0) || (type > STAT_SORT_TYPE_MAX))
-    {
+    if ((type < 0) || (type > STAT_SORT_TYPE_MAX)) {
         PyErr_SetString(YappiProfileError, "sorttype param for get_stats is out of bounds");
         goto err;
     }
-    if ((order < 0) || (order > STAT_SORT_ORDER_MAX))
-    {
+    if ((order < 0) || (order > STAT_SORT_ORDER_MAX)) {
         PyErr_SetString(YappiProfileError, "sortorder param for get_stats is out of bounds");
         goto err;
     }
-    if (limit < STAT_SHOW_ALL)
-    {
+    if (limit < STAT_SHOW_ALL) {
         PyErr_SetString(YappiProfileError, "limit param for get_stats is out of bounds");
         goto err;
     }
@@ -1110,11 +1001,9 @@ get_stats(PyObject *self, PyObject *args)
 
     fcnt = 0;
     p = statshead;
-    while(p)
-    {
+    while(p) {
         // limit reached?
-        if (limit != STAT_SHOW_ALL)
-        {
+        if (limit != STAT_SHOW_ALL) {
             if (fcnt == limit)
                 break;
         }
@@ -1137,13 +1026,10 @@ get_stats(PyObject *self, PyObject *args)
     if (PyList_Append(li, PyString_FromString(STAT_FOOTER_STR2)) < 0)
         goto err;
 
-    if (yapprunning)
-    {
+    if (yapprunning) {
         appttotal = tickcount()-yappstarttick;
         prof_state = "running";
-    }
-    else
-    {
+    } else {
         appttotal = yappstoptick - yappstarttick;
         prof_state = "stopped";
     }
@@ -1182,20 +1068,17 @@ enum_stats(PyObject *self, PyObject *args)
 {
     PyObject *enumfn;
 
-    if (!yapphavestats)
-    {
+    if (!yapphavestats) {
         PyErr_SetString(YappiProfileError, "profiler do not have any statistics. not started?");
         return NULL;
     }
 
-    if (!PyArg_ParseTuple(args, "O", &enumfn))
-    {
+    if (!PyArg_ParseTuple(args, "O", &enumfn)) {
         PyErr_SetString(YappiProfileError, "invalid param to enum_stats");
         return NULL;
     }
 
-    if (!PyCallable_Check(enumfn))
-    {
+    if (!PyCallable_Check(enumfn)) {
         PyErr_SetString(YappiProfileError, "enum function must be callable");
         return NULL;
     }
@@ -1206,8 +1089,7 @@ enum_stats(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static PyMethodDef yappi_methods[] =
-{
+static PyMethodDef yappi_methods[] = {
     {"start", start, METH_VARARGS, NULL},
     {"stop", stop, METH_VARARGS, NULL},
     {"get_stats", get_stats, METH_VARARGS, NULL},
@@ -1245,8 +1127,7 @@ init_yappi(void)
     yapphavestats = 0;
     yapprunning = 0;
 
-    if (!_init_profiler())
-    {
+    if (!_init_profiler()) {
         PyErr_SetString(YappiProfileError, "profiler cannot be initialized.");
         return;
     }
