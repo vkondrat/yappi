@@ -49,8 +49,8 @@ typedef struct {
     double ttot;
     double tsub;
     double tavg;
-    char result[LINE_LEN];
-    char fname[FUNC_NAME_LEN];
+    char result[LINE_LEN+1];
+    char fname[FUNC_NAME_LEN+1];
 } _statitem; //statitem created while getting stats
 
 
@@ -98,7 +98,9 @@ _create_pit(void)
 static _ctx *
 _create_ctx(void)
 {
-    _ctx *ctx = flget(flctx);
+    _ctx *ctx;
+
+    ctx = flget(flctx);
     if (!ctx)
         return NULL;
     ctx->cs = screate(100);
@@ -118,7 +120,6 @@ _create_ctx(void)
 static char *
 _item2fname(_pit *pt, int stripslashes)
 {
-    int i, sp;
     char *buf;
     PyObject *fname;
 
@@ -133,25 +134,13 @@ _item2fname(_pit *pt, int stripslashes)
     } else {
         fname = pt->co;
     }
-
-    // get the basename
-    sp = 0;
     buf = PyString_AS_STRING(fname); // TODO:memleak on buf?
-    for (i=strlen(buf); i>-1; i--) {
-        if ( (buf[i] == 92) || (buf[i] == 47) ) {
-            sp = i+1;
-            break;
-        }
-    }
-
     //DECREF should not be done on builtin funcs.
     //TODO: maybe this is problematic, too?
     //have not seen any problem, yet, in live.
     if (PyCode_Check(pt->co)) {
         Py_DECREF(fname);
     }
-    buf = &buf[sp];
-
     return buf;
 }
 
@@ -408,7 +397,7 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
         _call_leave(self, frame, arg);
         break;
 
-#ifdef PyTrace_C_CALL	/* not defined in Python <= 2.3 */
+#ifdef PyTrace_C_CALL	// not defined in Python <= 2.3 
 
     case PyTrace_C_CALL:
         if (PyCFunction_Check(arg))
@@ -434,8 +423,9 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
         current_ctx->class_name = _get_current_thread_class_name();
     }
     prev_ctx = current_ctx;
-    return 1;
+    return 0;
 }
+
 
 static void
 _profile_thread(PyThreadState *ts)
@@ -604,11 +594,6 @@ _pitenumstat(_hitem *item, void * arg)
     _pit *pt;
 
     pt = (_pit *)item->val;
-    // Issue #11 : ttotal may be 0 even if it is not on different timing
-    // sample values
-    //if (!pt->ttotal)
-    //return 0;
-
     cumdiff = _calc_cumdiff(pt->ttotal, pt->tsubtotal);
     efn = (PyObject *)arg;
 
@@ -637,7 +622,7 @@ _ystrmovtoend(char **s)
 {
     *s += strlen(*s);
 }
-
+/*
 void
 _yzipstr(char *s, int size)
 {
@@ -658,52 +643,80 @@ _yzipstr(char *s, int size)
             s[size-i] = ' ';
     }
 }
+*/
+
+void
+_yzipstr(char *s, int size, int wrapfrom)
+{
+    int i,len;
+
+    len = strlen(s);
+
+    for(i=len; i<size; i++)
+        s[i]  = ' ';
+    s[size] = '\0';
+
+    // no wrapping needed?
+    if (len+ZIP_MARGIN_LEN < size)
+        return;
+
+    for(i=0; i<ZIP_MARGIN_LEN; i++)
+        s[size-i-1] = ' ';
+
+    if (wrapfrom == M_LEFT) {
+        for(i=0; i<ZIP_DOT_COUNT; i++)
+            s[i] = '.';
+    } else {
+        for(i=0; i<ZIP_DOT_COUNT; i++)
+            s[size-i-ZIP_MARGIN_LEN-1] = '.';
+    }
+}
 
 void
 _yformat_string(char *a, char *s, int size)
 {
     int slen;
-
+	
+    _ystrmovtoend(&s);
     slen = strlen(a);
-    if (slen >= size-1) {
-        a[size-1] = '\0';
+	if (slen > size) {
+        snprintf(s, size, "%s", &a[slen-size]);
+    } else {
+        snprintf(s, size, "%s", a);
     }
-
-    _ystrmovtoend(&s);
-    sprintf(s, "%s", a);
-    _yzipstr(s, size);
+    _yzipstr(s, size, M_LEFT);
 }
 
 void
-_yformat_double(double a, char *s, int size)
+_yformat_double(double a, char *s)
 {
     _ystrmovtoend(&s);
-    sprintf(s, "%0.6f", a);
-    _yzipstr(s, size);
+    snprintf(s, DOUBLE_COLUMN_LEN, "%0.6f", a);
+    _yzipstr(s, DOUBLE_COLUMN_LEN, M_RIGHT);
 }
 
 void
-_yformat_ulong(unsigned long a, char *s, int size)
+_yformat_ulong(unsigned long a, char *s)
 {
     _ystrmovtoend(&s);
-    sprintf(s, "%lu", a);
-    _yzipstr(s, size);
+    snprintf(s, INT_COLUMN_LEN, "%lu", a);
+    _yzipstr(s, INT_COLUMN_LEN, M_RIGHT);
 }
 
 void
-_yformat_long(long a, char *s, int size)
+_yformat_long(long a, char *s)
 {
     _ystrmovtoend(&s);
-    sprintf(s, "%ld", a);
-    _yzipstr(s, size);
+    snprintf(s, LONG_COLUMN_LEN, "%ld", a);
+    _yzipstr(s, LONG_COLUMN_LEN, M_RIGHT);
 }
 
 void
-_yformat_int(int a, char *s, int size)
+_yformat_int(int a, char *s)
 {
     _ystrmovtoend(&s);
-    sprintf(s, "%d", a);
-    _yzipstr(s, size);
+    snprintf(s, INT_COLUMN_LEN, "%d", a);
+    _yzipstr(s, INT_COLUMN_LEN, M_RIGHT);
 }
 
 _statitem *
@@ -727,10 +740,10 @@ _create_statitem(char *fname, unsigned long callcount, double ttot, double tsub,
 
     // generate the result string field.
     _yformat_string(fname, si->result, FUNC_NAME_LEN);
-    _yformat_ulong(callcount, si->result, INT_COLUMN_LEN);
-    _yformat_double(tsub, si->result, DOUBLE_COLUMN_LEN);
-    _yformat_double(ttot, si->result, DOUBLE_COLUMN_LEN);
-    _yformat_double(tavg, si->result, DOUBLE_COLUMN_LEN);
+    _yformat_ulong(callcount, si->result);
+    _yformat_double(tsub, si->result);
+    _yformat_double(ttot, si->result);
+    _yformat_double(tavg, si->result);
 
 
     return si;
@@ -825,11 +838,6 @@ _pitenumstat2(_hitem *item, void * arg)
     _statnode *sni;
 
     pt = (_pit *)item->val;
-    // Issue #11 : ttotal may be 0 even if it is not on different timing
-    // sample values
-    //if (!pt->ttotal)
-    //return 0;
-
     cumdiff = _calc_cumdiff(pt->ttotal, pt->tsubtotal);
     fname = _item2fname(pt, 1);
     if (!fname)
@@ -890,10 +898,10 @@ _ctxenumstat(_hitem *item, void *arg)
         tcname = "N/A";
 
     _yformat_string(tcname, temp, THREAD_NAME_LEN);
-    _yformat_long(ctx->id, temp, TID_COLUMN_LEN);
+    _yformat_long(ctx->id, temp);
     _yformat_string(fname, temp, FUNC_NAME_LEN);
-    _yformat_ulong(ctx->sched_cnt, temp, INT_COLUMN_LEN);
-    _yformat_double(ctx->ttotal * tickfactor(), temp, DOUBLE_COLUMN_LEN);
+    _yformat_ulong(ctx->sched_cnt, temp);
+    _yformat_double(ctx->ttotal * tickfactor(), temp);
 
 
     buf = PyString_FromString(temp);
@@ -1045,9 +1053,9 @@ get_stats(PyObject *self, PyObject *args)
     timestr[strlen(timestr)-1] = '\0';
 
     _yformat_string(timestr, temp, TIMESTR_COLUMN_LEN);
-    _yformat_int(hcount(pits), temp, INT_COLUMN_LEN);
-    _yformat_int(hcount(contexts), temp, INT_COLUMN_LEN);
-    _yformat_ulong(ymemusage(), temp, INT_COLUMN_LEN);
+    _yformat_int(hcount(pits), temp);
+    _yformat_int(hcount(contexts), temp);
+    _yformat_ulong(ymemusage(), temp);
 
     if (PyList_Append(li, PyString_FromString(temp)) < 0)
         goto err;
