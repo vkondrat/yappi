@@ -623,6 +623,8 @@ _ystrmovtoend(char **s)
     *s += strlen(*s);
 }
 
+// adds spaces to extend to the size, or shrinks the string
+// from wrapfrom dýrection with adding dots.
 void
 _yzipstr(char *s, int size, int wrapfrom)
 {
@@ -650,14 +652,16 @@ _yzipstr(char *s, int size, int wrapfrom)
     }
 }
 
+// copies the size bytes of the string 'a' to the end of the
+// result string 's' and zipstr the result string.
 void
 _yformat_string(char *a, char *s, int size)
 {
     int slen;
-	
+
     _ystrmovtoend(&s);
     slen = strlen(a);
-	if (slen > size) {
+    if (slen > size) {
         snprintf(s, size, "%s", &a[slen-size]);
     } else {
         snprintf(s, size, "%s", a);
