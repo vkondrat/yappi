@@ -13,14 +13,18 @@
 #define HT_CS_COUNT_SIZE 7
 
 // stat related
+#define M_LEFT 1
+#define M_RIGHT -1
+
+
 #define LINE_LEN 80
 #define FUNC_NAME_LEN 37
 #define TIMESTR_COLUMN_LEN 27
-#define TID_COLUMN_LEN 7
+#define LONG_COLUMN_LEN 7
 #define THREAD_NAME_LEN 15
 #define DOUBLE_COLUMN_LEN 11
 #define INT_COLUMN_LEN 9
-#define ZIP_RIGHT_MARGIN_LEN 1
+#define ZIP_MARGIN_LEN 1
 #define ZIP_DOT_COUNT 2
 #define STAT_SORT_TYPE_MAX 4
 #define STAT_SORT_ORDER_MAX 1
