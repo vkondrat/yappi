@@ -1,84 +1,21 @@
-import yappi
-import time
-from threading import Thread
+import time 
+import yappi 
+import cProfile 
 
-def test1():
-	time.time()
+def a_very_long_function_name(): pass 
 
-class test(Thread):
-	def test2(self):
-		pass
-	def run(self):
-		self.test2()
-		time.sleep(2)
+def foo(): pass
 
+t0 = time.time()
+cProfile.run('foo()', 'fooprof') 
+print "Elapsed %0.6f" % (time.time()-t0)
+import pstats 
+p = pstats.Stats('fooprof') 
+p.strip_dirs().sort_stats(-1).print_stats() 
 
-#a = test()
-#a.start()
-#b = test()
-#b.start()
-#a.test2()
-#test1()
-#time.sleep(1)
-
-def foo5():
-	time.sleep(1)
-
-def foo4():
-	time.sleep(1)
-	
-
-def foo3():
-	time.sleep(1)
-	foo4()
-	foo5()
-
-def foo2():
-	time.sleep(1)
-	foo3()
-	
-
-def foo():
-	time.sleep(1)
-	B = test()
-	B.start()
-	c = test()
-	c.start()
-	for i in range(1000):
-	    test1()
-	for i in range(2):
-	    foo2()
-
-def estat(entry):
-	print entry	
-
-yappi.start(True)
-print 'PROFILER STARTED...'
-
-time.sleep(1)
-B = test()
-B.start()
-c = test()
-yappi.enum_stats(estat)
-c.start()
-test1()
+t0 = time.time()
+yappi.start()
 foo()
-
-
-	
-
-for i in range(2):
-	foo2()
-yappi.enum_stats(estat)
 yappi.stop()
+print "Elapsed %0.6f" % (time.time()-t0)
 yappi.print_stats()
-yappi.clear_stats()
-
-'''
-import cProfile
-cProfile.run('foo()', 'fooprof')
-import pstats
-p = pstats.Stats('fooprof')
-p.strip_dirs().sort_stats(-1).print_stats()
-'''
-
