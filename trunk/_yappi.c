@@ -622,28 +622,6 @@ _ystrmovtoend(char **s)
 {
     *s += strlen(*s);
 }
-/*
-void
-_yzipstr(char *s, int size)
-{
-    int i, len;
-
-    if (size <= ZIP_DOT_COUNT+ZIP_RIGHT_MARGIN_LEN)
-        return;
-
-    len = strlen(s);
-    for(i=len; i<size; i++)
-        s[i] = ' ';
-    s[size] = '\0'; //terminate the string
-
-    if (len > size-ZIP_DOT_COUNT-ZIP_RIGHT_MARGIN_LEN) {
-        for(i=1; i<=ZIP_DOT_COUNT ; i++)
-            s[size-i-ZIP_RIGHT_MARGIN_LEN] = '.';
-        for(i=1; i<=ZIP_RIGHT_MARGIN_LEN ; i++)
-            s[size-i] = ' ';
-    }
-}
-*/
 
 void
 _yzipstr(char *s, int size, int wrapfrom)
