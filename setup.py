@@ -1,6 +1,6 @@
 from distutils.core import setup, Extension
 
-setup(name="_yappi", version="0.4 beta",
+setup(name="_yappi", version="0.5 beta",
 	ext_modules = [Extension("_yappi", 
 		sources = ["_yappi.c", "_ycallstack.c", "_yhashtab.c", "_ymem.c", "_yfreelist.c", "_ytiming.c"],
 		#extra_compile_args = ["-D DEBUG_MEM", "-D DEBUG_CALL", "-D YDEBUG"],
