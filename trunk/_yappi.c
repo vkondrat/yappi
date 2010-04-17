@@ -3,7 +3,7 @@
  yappi
  Yet Another Python Profiler
 
- Sumer Cip 2009
+ Sumer Cip 2010
 
 */
 
@@ -18,7 +18,10 @@
 #include "_ystatic.h"
 #include "_ymem.h"
 
+// module macros
+#define YSTRMOVEND(s) (*s += strlen(*s))
 
+// module definitions
 typedef struct {
     PyObject *co; // CodeObject or MethodDef descriptive string.
     unsigned long callcount;
@@ -58,8 +61,8 @@ struct _stat_node_t {
     _statitem *it;
     struct _stat_node_t *next;
 };
-typedef struct _stat_node_t _statnode; // linked list used for appending stats while
-// getting stats
+typedef struct _stat_node_t _statnode; // linked list used for appending stats
+
 
 // profiler global vars
 static PyObject *YappiProfileError;
@@ -78,6 +81,7 @@ static long long yappstoptick;
 static _ctx *prev_ctx;
 static _ctx *current_ctx;
 
+// module functions
 static _pit *
 _create_pit(void)
 {
@@ -118,7 +122,7 @@ _create_ctx(void)
 // extracts the function name from a given pit. Note that pit->co may be
 // either a PyCodeObject or a descriptive string.
 static char *
-_item2fname(_pit *pt, int stripslashes)
+_item2fname(_pit *pt)
 {
     char *buf;
     PyObject *fname;
@@ -135,9 +139,6 @@ _item2fname(_pit *pt, int stripslashes)
         fname = pt->co;
     }
     buf = PyString_AS_STRING(fname); // TODO:memleak on buf?
-    //DECREF should not be done on builtin funcs.
-    //TODO: maybe this is problematic, too?
-    //have not seen any problem, yet, in live.
     if (PyCode_Check(pt->co)) {
         Py_DECREF(fname);
     }
@@ -321,7 +322,9 @@ _call_enter(PyObject *self, PyFrameObject *frame, PyObject *arg, int ccall)
     PyErr_Restore(last_type, last_value, last_tb);
 
 err:
+
     PyErr_Restore(last_type, last_value, last_tb);
+
 }
 
 
@@ -398,7 +401,6 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
         break;
 
 #ifdef PyTrace_C_CALL	// not defined in Python <= 2.3 
-
     case PyTrace_C_CALL:
         if (PyCFunction_Check(arg))
             _call_enter(self, frame, arg, 1); // set ccall to true
@@ -409,7 +411,6 @@ _yapp_callback(PyObject *self, PyFrameObject *frame, int what,
         if (PyCFunction_Check(arg))
             _call_leave(self, frame, arg);
         break;
-
 #endif
     default:
         break;
@@ -438,12 +439,13 @@ _profile_thread(PyThreadState *ts)
     if (!ctx)
         return;
 
-    // If a ThreadState object is destroyed, currently(v0.2) yappi does not
-    // deletes the associated resources. Instead, we rely on the fact that
+    // If a ThreadState object is destroyed, currently yappi does not
+    // delete the associated resources. Instead, we rely on the fact that
     // the ThreadState objects are actually recycled. We are using pointer
     // to map to the internal contexts table, and Python VM will try to use
     // the destructed thread's pointer when a new thread is created. They are
-    // pooled inside the VM. This is very hecky solution, but there is no
+    // pooled inside the VM. Sp this means we wii use the same pointer for our
+    // hash table like lazy deletion. This is a hecky solution, but there is no
     // efficient and easy way to somehow know that a Python Thread is about
     // to be destructed.
     if (!hadd(contexts, (uintptr_t)ts, (uintptr_t)ctx)) {
@@ -597,7 +599,7 @@ _pitenumstat(_hitem *item, void * arg)
     cumdiff = _calc_cumdiff(pt->ttotal, pt->tsubtotal);
     efn = (PyObject *)arg;
 
-    fname = _item2fname(pt, 0);
+    fname = _item2fname(pt);
     if (!fname)
         fname = "N/A";
 
@@ -610,17 +612,11 @@ _pitenumstat(_hitem *item, void * arg)
     // additional complexity and additional overhead. Any idea on this?
     // Do we really have an mt issue here? The parameters that are sent to the
     // function does not directly use the same ones, they will copied over to the VM.
-    PyObject_CallFunction(efn, "((sKff))", fname,
-                          pt->callcount, pt->ttotal * tickfactor(),
-                          cumdiff * tickfactor());
+    PyObject_CallFunction(efn, "((skff))", fname,
+                          pt->callcount, pt->ttotal * tickfactor() * flags.timing_sample,
+                          cumdiff * tickfactor() * flags.timing_sample);
 
     return 0;
-}
-
-void
-_ystrmovtoend(char **s)
-{
-    *s += strlen(*s);
 }
 
 // adds spaces to extend to the size, or shrinks the string
@@ -640,9 +636,11 @@ _yzipstr(char *s, int size, int wrapfrom)
     if (len+ZIP_MARGIN_LEN < size)
         return;
 
+    // extend the string with spaces
     for(i=0; i<ZIP_MARGIN_LEN; i++)
         s[size-i-1] = ' ';
 
+    // wrap the string according to the direction
     if (wrapfrom == M_LEFT) {
         for(i=0; i<ZIP_DOT_COUNT; i++)
             s[i] = '.';
@@ -659,7 +657,7 @@ _yformat_string(char *a, char *s, int size)
 {
     int slen;
 
-    _ystrmovtoend(&s);
+    YSTRMOVEND(&s);
     slen = strlen(a);
     if (slen > size) {
         snprintf(s, size, "%s", &a[slen-size]);
@@ -672,7 +670,7 @@ _yformat_string(char *a, char *s, int size)
 void
 _yformat_double(double a, char *s)
 {
-    _ystrmovtoend(&s);
+    YSTRMOVEND(&s);
     snprintf(s, DOUBLE_COLUMN_LEN, "%0.6f", a);
     _yzipstr(s, DOUBLE_COLUMN_LEN, M_RIGHT);
 }
@@ -680,7 +678,7 @@ _yformat_double(double a, char *s)
 void
 _yformat_ulong(unsigned long a, char *s)
 {
-    _ystrmovtoend(&s);
+    YSTRMOVEND(&s);
     snprintf(s, INT_COLUMN_LEN, "%lu", a);
     _yzipstr(s, INT_COLUMN_LEN, M_RIGHT);
 }
@@ -688,7 +686,7 @@ _yformat_ulong(unsigned long a, char *s)
 void
 _yformat_long(long a, char *s)
 {
-    _ystrmovtoend(&s);
+    YSTRMOVEND(&s);
     snprintf(s, LONG_COLUMN_LEN, "%ld", a);
     _yzipstr(s, LONG_COLUMN_LEN, M_RIGHT);
 }
@@ -696,7 +694,7 @@ _yformat_long(long a, char *s)
 void
 _yformat_int(int a, char *s)
 {
-    _ystrmovtoend(&s);
+    YSTRMOVEND(&s);
     snprintf(s, INT_COLUMN_LEN, "%d", a);
     _yzipstr(s, INT_COLUMN_LEN, M_RIGHT);
 }
@@ -821,7 +819,7 @@ _pitenumstat2(_hitem *item, void * arg)
 
     pt = (_pit *)item->val;
     cumdiff = _calc_cumdiff(pt->ttotal, pt->tsubtotal);
-    fname = _item2fname(pt, 1);
+    fname = _item2fname(pt);
     if (!fname)
         fname = "N/A";
 
@@ -829,8 +827,8 @@ _pitenumstat2(_hitem *item, void * arg)
     if  ((!flags.builtins) && (pt->builtin))
         return 0;
 
-    si = _create_statitem(fname, pt->callcount, pt->ttotal * tickfactor(),
-                          cumdiff * tickfactor(), (pt->ttotal * tickfactor()) / pt->callcount);
+    si = _create_statitem(fname, pt->callcount, pt->ttotal * tickfactor() * flags.timing_sample,
+                          cumdiff * tickfactor() * flags.timing_sample, (pt->ttotal * tickfactor() * flags.timing_sample) / pt->callcount);
 
     if (!si)
         return 1; // abort enumeration
@@ -868,8 +866,7 @@ _ctxenumstat(_hitem *item, void *arg)
 
     ctx = (_ctx *)item->val;
 
-    fname = _item2fname(ctx->last_pit, 1);
-
+    fname = _item2fname(ctx->last_pit);
     if (!fname)
         fname = "N/A";
 

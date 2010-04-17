@@ -1,6 +1,6 @@
 /*
-*    An Adaptive Hash Table
-*    Sumer Cip 2009
+*    Hash Table
+*    Sumer Cip 2010
 */
 
 #include "_yhashtab.h"
@@ -40,18 +40,6 @@ _hgrow(_htab *ht)
     yfree(dummy);
     return 1;
 }
-
-unsigned int
-_hhash(_htab *ht, int a)
-{
-    a = (a ^ 61) ^ (a >> 16);
-    a = a + (a << 3);
-    a = a ^ (a >> 4);
-    a = a * 0x27d4eb2d;
-    a = a ^ (a >> 15);
-    return (unsigned int)(a & ht->mask);
-}
-
 
 _htab *
 htcreate(int logsize)
@@ -103,10 +91,10 @@ htdestroy(_htab *ht)
 int
 hadd(_htab *ht, int key, int val)
 {
-    int h;
-    _hitem *new,*p;
+    unsigned int h;
+    _hitem *new, *p;
 
-    h = _hhash(ht, key);
+    h = HHASH(ht, key);
     p = ht->_table[h];
     new = NULL;
     while(p) {
@@ -141,30 +129,16 @@ hadd(_htab *ht, int key, int val)
     return 1;
 }
 
-
 _hitem *
 hfind(_htab *ht, int key)
 {
-    int h;
-    _hitem *p, *prev;
+    _hitem *p;
 
-    h = _hhash(ht, key);
-    p = ht->_table[h];
-    if (!p)
-        return NULL;
-    if ((p->key == key) && (!p->free))
-        return p;
-
-    prev = p;
-    p=p->next;
+    p = ht->_table[HHASH(ht, key)];
     while(p) {
         if ((p->key == key) && (!p->free)) {
-            SWAP(prev->key, p->key);
-            SWAP(prev->val, p->val);
-            SWAP(prev->free, p->free);
-            return prev;
+            return p;
         }
-        prev = p;
         p = p->next;
     }
     return NULL;

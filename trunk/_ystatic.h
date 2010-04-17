@@ -37,7 +37,7 @@
 #define STAT_SORT_DESCENDING 1
 #define STAT_SHOW_ALL -1
 
-#define STAT_HEADER_STR "\n\n\n\nname                                 #n       tsub(real) ttot       tavg"
+#define STAT_HEADER_STR "\n\n\n\nname                                 #n       tsub       ttot       tavg"
 #define STAT_FOOTER_STR "\n\nname           tid    fname                                scnt     ttot"
 #define STAT_FOOTER_STR2 "\n\nstatus     tstart                     fcnt     tcnt     mem(bytes)"
 
