@@ -19,13 +19,14 @@ print " >>>>>>>>> No profiler Elapsed %f" % (time.time()-t0)
 t0 = time.time()
 cProfile.run('foo()', 'fooprof') 
 print " >>>>>>>>> cProfile Elapsed %f" % (time.time()-t0)
-import pstats 
-p = pstats.Stats('fooprof') 
-p.strip_dirs().sort_stats(-1).print_stats() 
+#import pstats 
+#p = pstats.Stats('fooprof') 
+#p.strip_dirs().sort_stats(-1).print_stats() 
 
-t0 = time.time()
+
 yappi.start(timing_sample=1)
+t0 = time.time()
 foo()
-yappi.stop()
 print " >>>>>>>>> Yappi Elapsed %f" % (time.time()-t0)
+#yappi.stop()
 yappi.print_stats()

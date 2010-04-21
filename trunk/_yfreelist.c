@@ -7,7 +7,7 @@ _flgrow(_freelist *flp)
     int i, newsize;
     void **old;
 
-    dprintf("flgrow called.\n");
+    yerr("flgrow called.");
 
     old = flp->items;
     newsize = flp->size * 2;
