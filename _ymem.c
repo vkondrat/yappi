@@ -1,4 +1,5 @@
 #include "_ymem.h"
+#include "Python.h"
 
 static unsigned long memused=0;
 
@@ -46,7 +47,7 @@ ymalloc(size_t size)
     dnode_t *v;
 #endif
 
-    p = malloc(size+sizeof(size_t));
+    p = PyMem_Malloc(size+sizeof(size_t));
     if (!p) {
         yerr("malloc(%d) failed. No memory?", size);
         return NULL;
@@ -55,10 +56,10 @@ ymalloc(size_t size)
     *(size_t *)p = size;
 #ifdef DEBUG_MEM
     if (dhead)
-        dprintf("_ymalloc(%d) called[%p].[old_head:%p]", size, p, dhead->ptr);
+        yinfo("_ymalloc(%d) called[%p].[old_head:%p]", size, p, dhead->ptr);
     else
-        dprintf("_ymalloc(%d) called[%p].[old_head:nil]", size, p);
-    v = malloc(sizeof(dnode_t));
+        yinfo("_ymalloc(%d) called[%p].[old_head:nil]", size, p);
+    v = PyMem_Malloc(sizeof(dnode_t));
     v->ptr = p;
     v->size = size;
     v->next = dhead;
@@ -87,8 +88,8 @@ yfree(void *p)
             else
                 dhead = v->next;
 
-            dprintf("_yfree(%p) called.", p);
-            free(v);
+            yinfo("_yfree(%p) called.", p);
+            PyMem_Free(v);
             dsize--;
             break;
         }
@@ -96,5 +97,5 @@ yfree(void *p)
         v = v->next;
     }
 #endif
-    free(p);
+    PyMem_Free(p);
 }

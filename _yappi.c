@@ -7,7 +7,6 @@
 
 */
 
-
 #include "Python.h"
 #include "frameobject.h"
 #include "_ycallstack.h"
@@ -95,7 +94,15 @@ _create_pit(void)
     pit->tsubtotal = 0;
     pit->co = NULL;
     pit->builtin = 0;
+
+    // we do not profile the fist time as if the first timing measures
+    // can give incorrect calculations because of the caching behavior
+    // of Python. This is because we multiply the flags.timing_sample
+    // with the timing values of the function for the cold start. So just
+    // do not measure time the first time unless timing sample is "1" of
+    // course.
     pit->cpc = 0;
+
     return pit;
 }
 
@@ -432,6 +439,7 @@ static void
 _profile_thread(PyThreadState *ts)
 {
     _ctx *ctx;
+
     ts->use_tracing = 1;
     ts->c_profilefunc = _yapp_callback;
 
@@ -650,6 +658,15 @@ _yzipstr(char *s, int size, int wrapfrom)
     }
 }
 
+//PyOS_snprintf() and PyOS_vsnprintf() wrap the Standard C library functions snprintf() and vsnprintf(). Their //purpose is to guarantee consistent behavior in corner cases, which the Standard C functions do not.
+//The wrappers ensure that str*[*size-1] is always '\0' upon return. They never write more than size bytes //(including the trailing '\0' into str. Both functions require that str != NULL, size > 0 and format != NULL.
+//If the platform doesn’t have vsnprintf() and the buffer size needed to avoid truncation exceeds size by more //than 512 bytes, Python aborts with a Py_FatalError.
+//The return value (rv) for these functions should be interpreted as follows:
+//When 0 <= rv < size, the output conversion was successful and rv characters were written to str (excluding the //trailing '\0' byte at str*[*rv]).
+//When rv >= size, the output conversion was truncated and a buffer with rv + 1 bytes would have been needed to //succeed. str*[*size-1] is '\0' in this case.
+//When rv < 0, “something bad happened.” str*[*size-1] is '\0' in this case too, but the rest of str is undefined. //The exact cause of the error depends on the underlying platform.
+//The following functions provide locale-independent string to number conversions.
+
 // copies the size bytes of the string 'a' to the end of the
 // result string 's' and zipstr the result string.
 void
@@ -660,9 +677,9 @@ _yformat_string(char *a, char *s, int size)
     YSTRMOVEND(&s);
     slen = strlen(a);
     if (slen > size) {
-        snprintf(s, size, "%s", &a[slen-size]);
+        PyOS_snprintf(s, size, "%s", &a[slen-size]);
     } else {
-        snprintf(s, size, "%s", a);
+        PyOS_snprintf(s, size, "%s", a);
     }
     _yzipstr(s, size, M_LEFT);
 }
@@ -671,7 +688,7 @@ void
 _yformat_double(double a, char *s)
 {
     YSTRMOVEND(&s);
-    snprintf(s, DOUBLE_COLUMN_LEN, "%0.6f", a);
+    PyOS_snprintf(s, DOUBLE_COLUMN_LEN, "%0.6f", a);
     _yzipstr(s, DOUBLE_COLUMN_LEN, M_RIGHT);
 }
 
@@ -679,7 +696,7 @@ void
 _yformat_ulong(unsigned long a, char *s)
 {
     YSTRMOVEND(&s);
-    snprintf(s, INT_COLUMN_LEN, "%lu", a);
+    PyOS_snprintf(s, INT_COLUMN_LEN, "%lu", a);
     _yzipstr(s, INT_COLUMN_LEN, M_RIGHT);
 }
 
@@ -687,7 +704,7 @@ void
 _yformat_long(long a, char *s)
 {
     YSTRMOVEND(&s);
-    snprintf(s, LONG_COLUMN_LEN, "%ld", a);
+    PyOS_snprintf(s, LONG_COLUMN_LEN, "%ld", a);
     _yzipstr(s, LONG_COLUMN_LEN, M_RIGHT);
 }
 
@@ -695,7 +712,7 @@ void
 _yformat_int(int a, char *s)
 {
     YSTRMOVEND(&s);
-    snprintf(s, INT_COLUMN_LEN, "%d", a);
+    PyOS_snprintf(s, INT_COLUMN_LEN, "%d", a);
     _yzipstr(s, INT_COLUMN_LEN, M_RIGHT);
 }
 
