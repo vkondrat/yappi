@@ -440,12 +440,12 @@ _profile_thread(PyThreadState *ts)
 {
     _ctx *ctx;
 
-    ts->use_tracing = 1;
-    ts->c_profilefunc = _yapp_callback;
-
     ctx = _create_ctx();
     if (!ctx)
         return;
+
+    ts->use_tracing = 1;
+    ts->c_profilefunc = _yapp_callback;
 
     // If a ThreadState object is destroyed, currently yappi does not
     // delete the associated resources. Instead, we rely on the fact that
