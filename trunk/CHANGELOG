@@ -51,16 +51,18 @@ v0.51
 	This is due to VC2008 compile. Unfortunately, we need to use VC Express
 	Mingw is not working because of MSVCR dll files on 2.6.5 on some machines.
 [+] Use snprintf for stat handling code. There may be some buffer overflow situations.
-	Use PyOS_snprintf for platform differences. 
-[+] Format stat STRINGs from left, instead of right.
-[+] OPTIMIZATION:Move ctx calculation code to callback function. Optimize call_xxx
+	Use PyOS_snprintf for platform differences. (Thanks to Dave Peticolas)
+[+] Format stat STRINGs from left, instead of right. (Thanks to Dave Peticolas)
+[+] OPTIMIZATION:Move ctx calculation code to callback function. Optimize call_XXX
 	functions as much as possible.
 [+] OPTIMIZATION:Use per-pit cpc for better accuracy in different timing_sample values.
 	Now timing_sample is not linearly decreasing the timing accuracy for most of the 
 	applications tested. We reduced the runtime of the profiler from 3.2 secs to 0.7
 	by giving away ~%2 timing accuracy. This means yappi can now run 4x-7x times faster
-	than the standart cProfile by increasing timing_sample values.
+	than the standart cProfile by increasing timing_sample values with very little accuracy
+	defect.
 [+] Move timing calculation code from header to the C file.
 [+] MACRO defining code in setup.py is broken for some compilers, use DEFINE_MACRO
 	keyword.
-[+] OPTIMIZATION:disable HASH table linked list swapping code.
+[+] OPTIMIZATION:Disable HASH table linked list swapping code, it is not adapting to the 
+	profiler nature very well. Rollback to simple hash-table-bucketing.
