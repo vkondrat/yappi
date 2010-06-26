@@ -17,9 +17,13 @@ Update: A simple free list is used to allocate/deallocate items. Static memory p
 =Tested platforms:=
   * OpenSuse 11.1
   * Ubuntu 9.04
-  * Windows XP SP2
-Tests are performed with Python 2.5, 2.4 and 2.6 respectively.
-Tests shall and will include big-endian and 64 bit machines.
+  * Windows XP SP2,SP3
+  * Mac OS X
+  * CentOS
+
+Tests are performed with Python 2.5.x, 2.4.x and 2.6.x respectively.
+
+*Tests shall and will include big-endian and 64 bit machines.*
 
 =Limitations:=
 Threads must be derived from "threading" module's Thread object.
