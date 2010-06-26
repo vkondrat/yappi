@@ -220,7 +220,7 @@ _ccode2pit(void *cco)
 
         pit->builtin = 1; // set the bultin here
 
-        // built-in FUNCTION?
+        // built-in function?
         if (cfn->m_self == NULL) {
 
             PyObject *mod = cfn->m_module;
@@ -247,7 +247,7 @@ _ccode2pit(void *cco)
                 pit->co = PyString_FromFormat("<%s>",
                                               cfn->m_ml->ml_name);
 
-        } else { // built-in METHOD?
+        } else { // built-in method?
             PyObject *self = cfn->m_self;
             PyObject *name = PyString_FromString(cfn->m_ml->ml_name);
             if (name != NULL) {
