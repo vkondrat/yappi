@@ -210,17 +210,24 @@ _ccode2pit(void *cco)
     _hitem *it;
 
     cfn = cco;
-    it = hfind(pits, (uintptr_t)cco);
+    it = hfind(pits, (uintptr_t)cfn->m_ml);
     if (!it) {
         _pit *pit = _create_pit();
         if (!pit)
             return NULL;
-        if (!hadd(pits, (uintptr_t)cco, (uintptr_t)pit))
+        if (!hadd(pits, (uintptr_t)cfn->m_ml, (uintptr_t)pit))
             return NULL;
+
+        pit->builtin = 1; // set the bultin here
+
         // built-in FUNCTION?
         if (cfn->m_self == NULL) {
+
             PyObject *mod = cfn->m_module;
             char *modname;
+
+
+
             if (mod && PyString_Check(mod)) {
                 modname = PyString_AS_STRING(mod);
             } else if (mod && PyModule_Check(mod)) {
@@ -250,15 +257,16 @@ _ccode2pit(void *cco)
                 if (mo != NULL) {
                     PyObject *res = PyObject_Repr(mo);
                     Py_DECREF(mo);
-                    if (res != NULL)
+                    if (res != NULL) {
                         pit->co = res;
+                        return pit;
+                    }
                 }
             }
             PyErr_Clear();
             pit->co = PyString_FromFormat("<built-in method %s>",
                                           cfn->m_ml->ml_name);
         }
-        pit->builtin = 1; // set the bultin here
         return pit;
     }
     return ((_pit *)it->val);
@@ -659,17 +667,17 @@ _yzipstr(char *s, int size, int wrapfrom)
 }
 
 // From Python 2.6.5 Doc:
-// PyOS_snprintf() and PyOS_vsnprintf() wrap the Standard C library functions snprintf() and vsnprintf(). Their 
+// PyOS_snprintf() and PyOS_vsnprintf() wrap the Standard C library functions snprintf() and vsnprintf(). Their
 // purpose is to guarantee consistent behavior in corner cases, which the Standard C functions do not.
-// The wrappers ensure that str*[*size-1] is always '\0' upon return. They never write more than size bytes 
+// The wrappers ensure that str*[*size-1] is always '\0' upon return. They never write more than size bytes
 // (including the trailing '\0' into str. Both functions require that str != NULL, size > 0 and format != NULL.
-// If the platform doesn't have vsnprintf() and the buffer size needed to avoid truncation exceeds size by more 
-// than 512 bytes, Python aborts with a Py_FatalError.The return value (rv) for these functions should be 
-// interpreted as follows: When 0 <= rv < size, the output conversion was successful and rv characters were 
-// written to str (excluding the trailing '\0' byte at str*[*rv]).When rv >= size, the output conversion was 
-// truncated and a buffer with rv + 1 bytes would have been needed to succeed. str*[*size-1] is '\0' in this 
-// case.When rv < 0, something bad happened. str*[*size-1] is '\0' in this case too, but the rest of str is 
-// undefined. The exact cause of the error depends on the underlying platform. The following functions provide 
+// If the platform doesn't have vsnprintf() and the buffer size needed to avoid truncation exceeds size by more
+// than 512 bytes, Python aborts with a Py_FatalError.The return value (rv) for these functions should be
+// interpreted as follows: When 0 <= rv < size, the output conversion was successful and rv characters were
+// written to str (excluding the trailing '\0' byte at str*[*rv]).When rv >= size, the output conversion was
+// truncated and a buffer with rv + 1 bytes would have been needed to succeed. str*[*size-1] is '\0' in this
+// case.When rv < 0, something bad happened. str*[*size-1] is '\0' in this case too, but the rest of str is
+// undefined. The exact cause of the error depends on the underlying platform. The following functions provide
 // locale-independent string to number conversions. Copies the size bytes of the string 'a' to the end of the
 // result string 's' and zipstr the result string.
 void
