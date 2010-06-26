@@ -210,6 +210,10 @@ _ccode2pit(void *cco)
     _hitem *it;
 
     cfn = cco;
+    // Issue #15:
+    // Hashing cfn to the pits table causes different object methods
+    // to be hashed into the same slot. Use cfn->m_ml for hashing the
+    // Python C functions.
     it = hfind(pits, (uintptr_t)cfn->m_ml);
     if (!it) {
         _pit *pit = _create_pit();
