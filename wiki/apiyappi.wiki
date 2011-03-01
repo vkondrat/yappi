@@ -6,9 +6,9 @@
 yappi.<b>start</b>(builtins, timing_sample)
 </font>
 
-This function will start yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application. If there is another instance of yappi running in the interpreter or an unexpected situation occurs while initializing the profiler data structures, a relevant exception will be raised. Please note that yappi is per-application resource, you cannot run more than one instances per-application. 
+This function will start yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application. If there is another instance of yappi running in the interpreter or an unexpected situation occurs while initializing the profiler data structures, a relevant exception will be raised. Please note that yappi is per-interpreter resource, you cannot run more than one instance per-interpreter. 
 
-Function will take an optional parameter named *builtins*. As the name suggests, this means we also want to profile builtin functions used by standart modules. It is *False* by *default*.
+Function will take an optional parameter named *builtins*. As the name suggests, this means we also want to profile builtin functions used by standart Python modules. It is *False* by *default*.
 
 The second param is *timing_sample*. This param can be used further to decrease profiler runtime by giving away timing accuracy. On every timing_sample value timing measurements will be done, other times yappi will use a previous timing sample of the same function. There is no universal value for this param, just profile your own application and select the best value that suits you as the tradeoff is very application dependant. It is *1* by *default* which means every function call annonated and time measurements are calculated.
 <br><br>
@@ -80,8 +80,6 @@ _MainThread    2884   yappi.py.get_stats:44                1        0.000000
 status     tstart                    fcnt     tcnt     memusage(bytes)
 running    Sun Nov 22 11:51:16 200.. 2        1        37932    
 
-
-        yappi overhead: 0.000054/0.000231(%0.000007)
 >
 '''
 }}}
