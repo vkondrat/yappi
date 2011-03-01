@@ -19,7 +19,7 @@ The second param is *timing_sample*. This param can be used further to decrease 
 
 Please do not mess with this value unless you have very specific reasons for faster profile runtime.	
 
----- 
+----
 
 <font face='Courier New'>
 yappi.<b>stop</b>()
