@@ -3,7 +3,7 @@
 = Reference Manual =
 
 <font face='Courier New'>
-=yappi.<b>start</b>(builtins, timing_sample)=
+yappi.<b>start</b>(builtins, timing_sample)
 </font>
 
 _Remarks:_
