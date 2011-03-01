@@ -25,7 +25,7 @@ yappi.<b>stop</b>()
 
 Remarks:
 
-Stops the currently running yappi instance. 
+Stops the currently running yappi instance. Same profiling session might be resumed later by calling start().(unless clear_stats() is called in that period.)
 
 
 <font face='Courier New'>
