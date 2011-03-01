@@ -8,7 +8,7 @@ yappi.<b>start</b>(builtins, timing_sample)
 
 Remarks:
 
-Starts yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application.  Note that yappi is per-interpreter resource, you cannot run more than one instance per-interpreter. A relevant exception will be raised if you do so.
+Starts profiling all threads in the current interpreter instance. This function can be called from any thread at any time in the client application.  Note that yappi is per-interpreter resource, you cannot run more than one instance per-interpreter. A relevant exception will be raised if you do so.
 Resumes previous profiling data if stop() is called previously.(Note: you can clear the profiling stats via clear_stats() in a successfull start()/stop() sequence.)
 
 Params:
