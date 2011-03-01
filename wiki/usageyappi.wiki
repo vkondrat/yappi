@@ -23,9 +23,6 @@ _MainThread    2884   yappi.py.get_stats:44                1        0.000000
 
 status     tstart                    fcnt     tcnt     memusage(bytes)
 running    Sun Nov 22 11:51:16 200.. 2        1        37932    
-
-
-        yappi overhead: 0.000054/0.000231(%0.000007)
 >
 '''
 }}}
@@ -53,8 +50,6 @@ the *profiler stats* gives information about the general profiling information:
   * *fcnt*: total number of profiled functions.
   * *tcnt*: total number of profiled threads.
   * *memusage*: total memory usage of the profiler itself in bytes. This field has nothing to do with the application memory usage. It only shows how much memory yappi uses internally.
-
-the last field is the *yappi overhead* field. This requires some explanation. Every profiler has an overhead that is put on the profiled application. As yappi is designed to work with long-running applications, we want to see how much overhead the profiler is putting on to the profiled application. In the example above, yappi overhead is 0.000054 ms where the application run time total is 0.000231 which means the time spent in the profiler is about ~%0.000007 of the runtime of the application. We have done our best from the start to make this overhead as scalable as possible. With scalable, we mean that yappi uses different algorithms to make sure the profiler overhead does not increase with the size of the profiled application, at least in theory. You can see different overhead calculations in the examples in this page. 
 
 *Detecting deadlocks:*
 {{{
@@ -106,9 +101,6 @@ deadlock_thr.. 3380   testdeadlock.py.foo:6                1        0.000000 -->
 
 status     tstart                    fcnt     tcnt     memusage(bytes)
 running    Sun Nov 22 12:15:58 200.. 15       2        41620
-
-
-        yappi overhead: 0.000302/7.880298(%0.000000)
 
 yappi>
 """
@@ -197,7 +189,6 @@ status     tstart                    fcnt     tcnt     memusage(bytes)
 running    Sun Nov 22 12:21:56 200.. 35       2        46140
 
 
-        yappi overhead: 0.004283/4.532788(%0.000000)
 
 projects/yappi$
 """
