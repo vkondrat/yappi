@@ -29,6 +29,7 @@ Remarks:
 
 Stops the currently running yappi instance. Same profiling session might be resumed later by calling start().(unless clear_stats() is called in that period.)
 
+----
 
 <font face='Courier New'>
 yappi.<b>enum_stats</b>(fenum)
@@ -52,6 +53,7 @@ yappi.stop()
 yappi.enum_stats(estat)
 }}}
 
+----
 
 <font face='Courier New'>
 yappi.<b>get_stats</b>(sorttype, sortorder, limit)
@@ -103,6 +105,7 @@ running    Sun Nov 22 11:51:16 200.. 2        1        37932
 '''
 }}}
 
+----
 
 <font face='Courier New'>
 yappi.<b>print_stats</b>()
@@ -112,6 +115,7 @@ Remarks:
 
 Prints the current statistic results to the stdout. The parameters are same as the get_stats() function.
 
+----
 
 <font face='Courier New'>
 yappi.<b>clear_stats</b>(sorttype, sortorder, limit)
