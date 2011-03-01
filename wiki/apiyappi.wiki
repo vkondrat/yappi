@@ -24,6 +24,7 @@ yappi.<b>stop</b>()
 </font>
 
 Remarks:
+
 Stops the currently running yappi instance. 
 
 
@@ -32,9 +33,11 @@ yappi.<b>enum_stats</b>(fenum)
 </font>
 
 Remarks:
+
 Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked per yappi stat-item. Can only be called if there are any statistics available, meaning profiler had run at least one time and clear_stats() is not called. 
 
 Example:
+
 {{{
 import yappi
 def estat(stat_entry):
@@ -53,9 +56,11 @@ yappi.<b>get_stats</b>(sorttype, sortorder, limit)
 </font>
 
 Remarks:
+
 Returns the current statistic result in a list object formatted according to the given parameters.
 
 Params:
+
   * <font face='Courier New'><b>sorttype</b></font>: There are several columns in the statistics results. This parameter controls on which column you want the sort to be based on. The valid values for this parameter are:
     * <font face='Courier New'>yappi.SORTTYPE_NAME</font>  : Sorts the results according to function name.
     * <font face='Courier New'>yappi.SORTTYPE_NCALL</font> : Sorts the results according to their call count.*(default)*
@@ -69,6 +74,7 @@ Params:
     * <font face='Courier New'>yappi.SHOW_ALL</font> : Returns all of the statistic results.*(default)*
 
 Example:
+
 {{{
 import yappi
 def foo(): pass
@@ -101,6 +107,7 @@ yappi.<b>print_stats</b>()
 </font>
 
 Remarks:
+
 Prints the current statistic results to the stdout. The parameters are same as the get_stats() function.
 
 
@@ -109,4 +116,5 @@ yappi.<b>clear_stats</b>(sorttype, sortorder, limit)
 </font>
 
 Remarks:
+
 Clears the profiling statistic information. Note that the only way to really delete the statistics is this function. The results stays with the application unless application(all threads including the main thread) exists or clear_stats() is called. yappi does not mess with the result set upon stop() or start(). It is user's responsibility to clear the statistics whenever appropiate. This also means without calling clear_stats(), you can resume previously stopped profile informations via start().
