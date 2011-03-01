@@ -2,7 +2,7 @@
 
 = Reference Manual =
 
-<font face='Courier New' size=11px>
+<font face='Courier New'>
 yappi.<b>start</b>(builtins, timing_sample)
 </font>
 
