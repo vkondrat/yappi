@@ -6,8 +6,11 @@
 yappi.<b>start</b>(builtins, timing_sample)
 </font>
 
-This function will start yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application. If there is another instance of yappi running in the interpreter or an unexpected situation occurs while initializing the profiler data structures, a relevant exception will be raised. Please note that yappi is per-interpreter resource, you cannot run more than one instance per-interpreter. 
+Remarks:
+Starts yappi and all threads in the current interpreter instance will be profiled. This function can be called from any thread at any time in the application.  Note that yappi is per-interpreter resource, you cannot run more than one instance per-interpreter. A relevant exception will be raised if you do so.
+Resumes previous profiling data if stop() is called previously.(Note: you can clear the profiling stats via clear_stats() in a successfull start()/stop() sequence.)
 
+Params:
 Function will take an optional parameter named *builtins*. As the name suggests, this means we also want to profile builtin functions used by standart Python modules. It is *False* by *default*.
 
 The second param is *timing_sample*. This param can be used further to decrease profiler runtime by giving away timing accuracy. On every timing_sample value timing measurements will be done, other times yappi will use a previous timing sample of the same function. There is no universal value for this param, just profile your own application and select the best value that suits you as the tradeoff is very application dependant. It is *1* by *default* which means every function call annonated and time measurements are calculated.
@@ -18,6 +21,7 @@ The second param is *timing_sample*. This param can be used further to decrease 
 yappi.<b>stop</b>()
 </font>
 
+Remarks:
 Stops the currently running yappi instance. 
 
 
@@ -25,7 +29,10 @@ Stops the currently running yappi instance.
 yappi.<b>enum_stats</b>(fenum)
 </font>
 
-Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked per yappi stat-item. Can only be called if there are any statistics available, meaning profiler had run at least one time and clear_stats() is not called. See the example below:
+Remarks:
+Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked per yappi stat-item. Can only be called if there are any statistics available, meaning profiler had run at least one time and clear_stats() is not called. 
+
+Example:
 {{{
 import yappi
 def estat(stat_entry):
@@ -43,8 +50,10 @@ yappi.enum_stats(estat)
 yappi.<b>get_stats</b>(sorttype, sortorder, limit)
 </font>
 
-Returns the current statistic result in a list object formatted according to the given parameters.get_stats() function accepts following parameters:
+Remarks:
+Returns the current statistic result in a list object formatted according to the given parameters.
 
+Params:
   * <font face='Courier New'><b>sorttype</b></font>: There are several columns in the statistics results. This parameter controls on which column you want the sort to be based on. The valid values for this parameter are:
     * <font face='Courier New'>yappi.SORTTYPE_NAME</font>  : Sorts the results according to function name.
     * <font face='Courier New'>yappi.SORTTYPE_NCALL</font> : Sorts the results according to their call count.*(default)*
@@ -56,8 +65,8 @@ Returns the current statistic result in a list object formatted according to the
     * <font face='Courier New'>yappi.SORTORDER_DESCENDING</font> : Sorts the values in descending order.*(default)*
   * <font face='Courier New'><b>limit</b></font>: There may be too many functions profiled and user is not interested in many of them. So, limit gives the user the ability to limit the result set returned by the function. With this and above param, a user easily retrieves the top running functions that he/she is interested in.
     * <font face='Courier New'>yappi.SHOW_ALL</font> : Returns all of the statistic results.*(default)*
-See example get_stats() output below in a simple program:
 
+Example:
 {{{
 import yappi
 def foo(): pass
@@ -89,6 +98,7 @@ running    Sun Nov 22 11:51:16 200.. 2        1        37932
 yappi.<b>print_stats</b>()
 </font>
 
+Remarks:
 Prints the current statistic results to the stdout. The parameters are same as the get_stats() function.
 
 
@@ -96,4 +106,5 @@ Prints the current statistic results to the stdout. The parameters are same as t
 yappi.<b>clear_stats</b>(sorttype, sortorder, limit)
 </font>
 
-Clears the result statistics. Note that the only way to really delete the statistics is this function. The results stays with the application unless application(all threads including the main thread) exists or clear_stats() is called. yappi does not mess with the result set upon stop() or start(). It is user's responsibility to clear the statistics whenever appropiate.
+Remarks:
+Clears the profiling statistic information. Note that the only way to really delete the statistics is this function. The results stays with the application unless application(all threads including the main thread) exists or clear_stats() is called. yappi does not mess with the result set upon stop() or start(). It is user's responsibility to clear the statistics whenever appropiate. This also means without calling clear_stats(), you can resume previously stopped profile informations via start().
