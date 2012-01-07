@@ -120,7 +120,7 @@ Prints the current statistic results to the stdout. The parameters are same as t
 ----
 
 <font face='Courier New'>
-yappi.<b>clear_stats</b>(sorttype, sortorder, limit)
+yappi.<b>clear_stats</b>()
 </font>
 
 _Remarks:_
