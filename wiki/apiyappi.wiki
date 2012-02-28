@@ -55,12 +55,12 @@ yappi.enum_stats(estat)
 ----
 
 <font face='Courier New'>
-yappi.<b>is_running</b>()
+yappi.<b>enum_thread_stats</b>()
 </font>
 
 _Remarks:_
 
-Returns a boolean indicating whether yappi is running or not.
+// TODO:
 
 ----
 
