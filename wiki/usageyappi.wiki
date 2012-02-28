@@ -3,46 +3,25 @@
 
 *Using yappi and Interpreting the statistics*
 {{{
-import yappi
-def foo(): pass
-yappi.start()
-foo()
-stats = yappi.get_stats()
-for stat in stats: print stat
-yappi.stop()
-'''
-Output:
->python simple.py
-name                                 ccnt     ttot       tsub       tavg
-simple.py.foo:2                      1        0.000041   0.000041   0.000041   
-
-
-tname          tid    fname                                schedc   ttot
-_MainThread    2884   yappi.py.get_stats:44                1        0.000000   
-
-
-status     tstart                    fcnt     tcnt     memusage(bytes)
-running    Sun Nov 22 11:51:16 200.. 2        1        37932    
->
-'''
+ /// todo:
 }}}
 
 Note that there are several columns in the profiler stats. The first one is *function stats*:
 
   * *name*: name of the function being profiled
-  * *ccnt*: is the total callcount of the function. 
+  * *#n*: is the total callcount of the function. 
+  * *tsub*: total time spent in the function.
   * *ttot*: total time spent in the function.
-  * *tsub*: total time spent in the function excluding sub-calls.
-  * *tavg*: is same as ttot / ccnt. Average total time.
+  * *tavg*: is same as ttot/ccnt. Average total time.
 
 the *thread stats* field gives information about the threads in the profiled application. 
 
-  * *tname*: name of the thread object.
-  * *tstart*: start time of the profiler.
+  * *name*: class name of the threading.thread object.
+  * *tid*: thread identifier.
   * *fname*: name of the last executed function in this thread.
-  * *schedc*: number of times this thread is scheduled.
   * *ttot*: total time spent in this thread.
-
+  * *scnt*: number of times this thread is scheduled.
+  
 the *profiler stats* gives information about the general profiling information:
 
   * *status*: profiler status. Can be either running or stopped.
@@ -50,146 +29,3 @@ the *profiler stats* gives information about the general profiling information:
   * *fcnt*: total number of profiled functions.
   * *tcnt*: total number of profiled threads.
   * *memusage*: total memory usage of the profiler itself in bytes. This field has nothing to do with the application memory usage. It only shows how much memory yappi uses internally.
-
-*Detecting deadlocks:*
-{{{
-'''
-acquire the lock two times to create a deadlock. Lets use 
-yappi to detect/debug those kind of deadlock issues. Note 
-that not every type of deadlock can be detected/monitored by
-yappi of course. But the idea is here to show how to use
-some features of yappi for debugging some multithreading issues.
-'''
-import yappi
-import threading
-class deadlock_thread(threading.Thread):
-    def foo(self):
-        for i in xrange(0,2): self.lock.acquire()
-    def run(self):
-        self.lock = threading.Lock()
-        self.foo()
-yappi.start() # start the profiler
-thr = deadlock_thread() # start the deadlock thread
-thr.start()
-while 1:
-    s = raw_input("yappi>")
-    exec s
-}}}
-So, let's execute the script and type in _yappi.print_stats()_ to print out the stat results. Let's see the output:
-{{{
-"""
-yappi>yappi.print_stats()
-
-
-name                                 ccnt     ttot       tsub       tavg
-threading.py.__init__:39             2        0.000019   0.000019   0.000009
-threading.py._set_daemon:415         1        0.000053   0.000027   0.000053
-threading.py.isDaemon:624            1        0.000009   0.000009   0.000009
-threading.py.currentThread:733       1        0.000017   0.000017   0.000017
-threading.py.__init__:396            1        0.000286   0.000122   0.000286
-threading.py._note:44                1        0.000008   0.000008   0.000008
-threading.py._newname:374            1        0.000018   0.000018   0.000018
-threading.py.start:430               1        0.000399   0.000391   0.000399
-threading.py.__init__:158            1        0.000058   0.000049   0.000058
-threading.py.Condition:153           1        0.000082   0.000024   0.000082
-
-
-tname          tid    fname                                schedc   ttot
-_MainThread    4040   yappi.py.get_stats:44                2        0.000264
-deadlock_thr.. 3380   testdeadlock.py.foo:6                1        0.000000 --> last executed function in the deadlock_thread
-
-
-status     tstart                    fcnt     tcnt     memusage(bytes)
-running    Sun Nov 22 12:15:58 200.. 15       2        41620
-
-yappi>
-"""
-}}}
-We can regularly check the stats and if no change occurs on the last executed function in the thread, then this naturally is a good sign of a deadlock. 
-
-*A More Complex Usage:*
-{{{
-'''
- start profiler with built-in profiling set to True. In this example,
- we try to demonstrate how yappi behaves when multiple threads will 
- call recursive functions which is one of the basic unit tests of the 
- profiler.
-'''
-import time
-import yappi
-from threading import Thread
-
-NTHREAD = 5
-MAXRDEPTH = 10
-
-def foo2(): 
-	time.sleep(0.1)
-
-def foo(rdepth):
-	if (rdepth == MAXRDEPTH): return
-	foo2()
-	foo(rdepth+1)	
-
-if __name__ == "__main__":
-	yappi.start(True)
-	for i in range(NTHREAD):
-		thr = Thread(foo(1))
-                thr.start()
-                thr.join()
-	for it in yappi.get_stats(yappi.SORTTYPE_TTOTAL,
-				  yappi.SORTORDER_ASCENDING,
-				  yappi.SHOW_ALL):
-		print it
-
-"""
-projects/yappi$ python usage.py
-
-name                                 ccnt     ttot       tsub       tavg
-<built-in method release>            2        0.000015   0.000015   0.000007
-<range>                              1        0.000041   0.000041   0.000041
-<len>                                5        0.000041   0.000041   0.000008
-threading.py.isDaemon:624            5        0.000043   0.000043   0.000009
-<built-in method acquire>            2        0.000054   0.000054   0.000027
-threading.py.__init__:39             10       0.000100   0.000100   0.000010
-<thread.get_ident>                   15       0.000113   0.000113   0.000008
-threading.py._newname:374            5        0.000116   0.000116   0.000023
-threading.py.run:444                 5        0.000120   0.000120   0.000024
-threading.py._release_save:192       5        0.000120   0.000074   0.000024
-<thread.allocate_lock>               10       0.000177   0.000177   0.000018
-threading.py.currentThread:733       10       0.000244   0.000171   0.000024
-threading.py._note:44                30       0.000256   0.000256   0.000009
-threading.py._set_daemon:415         5        0.000288   0.000114   0.000058
-threading.py.__init__:158            5        0.000318   0.000276   0.000064
-threading.py._acquire_restore:195    5        0.000441   0.000080   0.000088
-threading.py.Condition:153           5        0.000446   0.000127   0.000089
-threading.py.notify:249              5        0.000575   0.000313   0.000115
-threading.py._is_owned:198           10       0.000736   0.000175   0.000074
-threading.py.notifyAll:267           5        0.000750   0.000134   0.000150
-<built-in method acquire>            17       0.000840   0.000840   0.000049
-<built-in method acquire>            17       0.000921   0.000921   0.000054
-<built-in method acquire>            22       0.000925   0.000925   0.000042
-<built-in method acquire>            25       0.001312   0.001312   0.000052
-threading.py.__stop:539              5        0.001413   0.000210   0.000283
-threading.py.__init__:396            5        0.001418   0.000398   0.000284
-<thread.start_new_thread>            5        0.001566   0.001566   0.000313
-threading.py.start:430               5        0.002355   0.000314   0.000471
-threading.py.wait:207                5        0.003407   0.000471   0.000681
-threading.py.join:579                5        0.004375   0.000474   0.000875
-<time.sleep>                         50       4.520968   4.520968   0.090419
-usage.py.foo2:8                      45       4.521722   0.001107   0.100483
-usage.py.foo:11                      50       4.523304   0.001581   0.090466
-
-
-tname          tid    fname                                schedc   ttot
-Thread         3552   <built-in method acquire>            19       0.002130
-_MainThread    2584   <_yappi.get_stats>                   20       27.16196..
-
-
-status     tstart                    fcnt     tcnt     memusage(bytes)
-running    Sun Nov 22 12:21:56 200.. 35       2        46140
-
-
-
-projects/yappi$
-"""
-}}}
