@@ -55,6 +55,16 @@ yappi.enum_stats(estat)
 ----
 
 <font face='Courier New'>
+yappi.<b>is_running</b>()
+</font>
+
+_Remarks:_
+
+Returns a boolean indicating whether yappi is running or not.
+
+----
+
+<font face='Courier New'>
 yappi.<b>get_stats</b>(sorttype, sortorder, limit)
 </font>
 
@@ -105,3 +115,13 @@ yappi.<b>clear_stats</b>()
 _Remarks:_
 
 Clears the profiler results. Note that the only way to really delete the statistics is this function. The results stays with the application unless application(all threads including the main thread) exists or clear_stats() is called. yappi does not mess with the result set upon stop() or start(). It is user's responsibility to clear the statistics whenever appropiate. This also means without calling clear_stats(), you can resume previously stopped profile informations via start().
+
+----
+
+<font face='Courier New'>
+yappi.<b>is_running</b>()
+</font>
+
+_Remarks:_
+
+Returns a boolean indicating whether yappi is running or not.
