@@ -37,7 +37,7 @@ yappi.<b>enum_stats</b>(fenum)
 
 _Remarks:_
 
-Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked for every profiled function. The parameter is a Python tuple consisting all of the information related to profiling. Can only be called if there are any results available, meaning yappi had run at least one time and clear_stats() is not called. 
+Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked for every profiled function. The parameter is a YStatDict instance consisting all of the information related to function profiling: ('name', 'ncall', 'ttot', 'tsub', 'tavg')
 
 _Example:_
 
@@ -45,7 +45,7 @@ _Example:_
 import yappi
 def estat(stat_entry): print e
 def foo():
-	pass
+    pass
 yappi.start(True)
 foo()
 yappi.stop()
@@ -60,7 +60,7 @@ yappi.<b>enum_thread_stats</b>()
 
 _Remarks:_
 
-// TODO:
+Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked for every profiled function. The parameter is a YStatDict instance consisting all of the information related to thread profiling: ('name', 'id', 'last_func', 'ttot', 'sched_count')
 
 ----
 
@@ -70,9 +70,7 @@ yappi.<b>get_stats</b>(sorttype, sortorder, limit)
 
 _Remarks:_
 
-Returns a list of YStatDict instances. Returned YStatDict object holds the profiling information in following instance attributes:
-('name', 'ncall', 'ttot', 'tsub', 'tavg')
-
+Returns a YStats object. YStats object will have two list attributes(func_stats, thread_stats). See the example below for the usage.
 
 _Params:_
 
@@ -87,6 +85,8 @@ _Params:_
     * <font face='Courier New'>yappi.SORTORDER_DESCENDING</font> : Sorts the values in descending order._(default)_
   * <font face='Courier New'><b>limit</b></font>: There may be too many functions profiled and user is not interested in many of them. So, limit gives the user the ability to limit the result set returned by the function. With this and above param, a user easily retrieves the top running functions that he/she is interested in.
     * <font face='Courier New'>yappi.SHOW_ALL</font> : Returns all of the statistic results._(default)_
+
+* <font face='Courier New'><b>thread_stats_on</b></font>: If set to true, returns thread profiling information. True by _default_. 
 
 _Example:_
 
