@@ -158,3 +158,9 @@ yappi.<b>clock_type</b>()
 _Remarks:_
 
 Returns the underlying clock type yappi uses to retrieve per-thread CPU time.
+
+{{{
+>import yappi
+>print yappi.clock_type()
+>{'clock_type': 'getthreadtimes', 'resolution': '100ns'}
+}}}
