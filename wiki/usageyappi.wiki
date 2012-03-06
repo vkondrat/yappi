@@ -22,10 +22,3 @@ the *thread stats* field gives information about the threads in the profiled app
   * *ttot*: total time spent in this thread.
   * *scnt*: number of times this thread is scheduled.
   
-the *profiler stats* gives information about the general profiling information:
-
-  * *status*: profiler status. Can be either running or stopped.
-  * *tid*: id of the thread. 
-  * *fcnt*: total number of profiled functions.
-  * *tcnt*: total number of profiled threads.
-  * *memusage*: total memory usage of the profiler itself in bytes. This field has nothing to do with the application memory usage. It only shows how much memory yappi uses internally.
