@@ -37,7 +37,7 @@ yappi.<b>enum_stats</b>(fenum)
 
 _Remarks:_
 
-Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked for every profiled function. The parameter is a YStatDict instance consisting all of the information related to function profiling: ('name', 'ncall', 'ttot', 'tsub', 'tavg')
+Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked for every profiled function. The parameter is a Python tuple instance consisting all of the information related to function profiling: ('function_name', 'callcount', 'ttot', 'tsub')
 
 _Example:_
 
@@ -49,8 +49,6 @@ foo()
 def estat(stat_entry):
     print stat_entry
 yappi.enum_stats(estat)
-
-
 >>>('tt.py.foo:4', 1, 0.40625, 0.28125)
 
 }}}
@@ -63,7 +61,7 @@ yappi.<b>enum_thread_stats</b>()
 
 _Remarks:_
 
-Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked for every profiled function. The parameter is a YStatDict instance consisting all of the information related to thread profiling: ('name', 'id', 'last_func', 'ttot', 'sched_count')
+Enumerates the profile stats one by one. The parameter _fenum_ should be a callable Python function with one parameter, say _stat_entry_ which will be invoked for every profiled function. The parameter is a Python tuple instance consisting all of the information related to thread profiling: ('thread_name', 'thread_id', 'last_func', 'ttot', 'sched_count')
 
 ----
 
