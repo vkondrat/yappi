@@ -122,12 +122,15 @@ _Example:_
 ----
 
 <font face='Courier New'>
-yappi.<b>print_stats</b>()
+yappi.<b>print_stats</b>(out=sys.stdout, sorttype, sortorder, limit)
 </font>
 
-_Remarks:_
+_Params:_
 
-Prints the current statistic results to the stdout. The parameters are same as the get_stats() function.
+  * <font face='Courier New'><b>out</b></font>: The fd which the output is redirected to. Default is sys.stdout.
+
+_Remarks:_
+Remaining parameters are same as the get_stats() function.
 
 ----
 
