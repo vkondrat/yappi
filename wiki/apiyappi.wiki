@@ -32,7 +32,7 @@ Stops the currently running yappi instance. Same profiling session might be resu
 ----
 
 <font face='Courier New'>
-yappi.<b>enum_stats</b>(fenum)
+yappi.<b>enum_func_stats</b>(fenum)
 </font>
 
 _Remarks:_
