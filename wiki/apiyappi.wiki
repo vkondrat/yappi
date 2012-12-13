@@ -77,7 +77,7 @@ _Example:_
 ----
 
 <font face='Courier New'>
-yappi.<b>get_stats</b>(sorttype, sortorder, limit)
+yappi.<b>get_func_stats</b>(sorttype, sortorder, limit)
 </font>
 
 _Remarks:_
