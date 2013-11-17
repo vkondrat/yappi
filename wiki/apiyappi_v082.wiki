@@ -50,7 +50,7 @@ yappi.<b>get_func_stats</b>()
 
 _Remarks:_
 
-Returns the function stats as YFuncStats[https://code.google.com/p/yappi/wiki/YFuncStats_v082] object.
+Returns the function stats as [https://code.google.com/p/yappi/wiki/YFuncStats_v082 YFuncStats]  object.
 
 ----
 
@@ -60,7 +60,7 @@ yappi.<b>get_thread_stats</b>()
 
 _Remarks:_
 
-Returns the thread stats as [https://code.google.com/p/yappi/wiki/YThreadStats_v082]YThreadStats object.
+Returns the thread stats as [https://code.google.com/p/yappi/wiki/YThreadStats_v082 YThreadStats ] object.
 
 ----
 
