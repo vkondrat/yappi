@@ -32,6 +32,8 @@ _Remarks:_
 
 Stops the currently running yappi instance. Same profiling session might be resumed later by calling start().
 
+----
+
 <font face='Courier New'>
 yappi.<b>clear_stats</b>()
 </font>
@@ -39,6 +41,26 @@ yappi.<b>clear_stats</b>()
 _Remarks:_
 
 Clears the profiler results. The results stays in memory unless application(all threads including the main thread) exists or clear_stats() is called.
+
+----
+
+<font face='Courier New'>
+yappi.<b>get_func_stats</b>()
+</font>
+
+_Remarks:_
+
+Returns the function stats as <a href="#">YFuncStats</a> object.
+
+----
+
+<font face='Courier New'>
+yappi.<b>get_thread_stats</b>()
+</font>
+
+_Remarks:_
+
+Returns the thread stats as <a href="#">YThreadStats</a> object.
 
 ----
 
