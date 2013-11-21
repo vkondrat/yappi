@@ -69,9 +69,7 @@ Example on windows:
 yappi.<b>set_clock_type</b>(type)
 </font>
 
-    Sets the underlying clock type. 
-
-'type' can be following: 
+    Sets the underlying clock type. _type_ can be following: 
 
 || *Clock Type* || *Description* ||
 || Wall || [http://en.wikipedia.org/wiki/Wall_time Details] ||
