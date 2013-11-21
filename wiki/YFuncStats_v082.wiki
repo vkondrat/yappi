@@ -18,9 +18,9 @@
 
     The following are the save formats currently available:
 || *Format* || *-* ||
-|| ystat || - ||
-|| pstats || - ||
-|| callgrind || - ||
+|| ystat || 
+|| [http://docs.python.org/3.3/library/profile.html?highlight=pstat#pstats.Stats.print_stats pstats] || 
+|| [http://kcachegrind.sourceforge.net/html/CallgrindFormat.html callgrind] ||
 
 <b>print_all(out=sys.stdout)</b>
     This method prints the current profile stats to <i>"out"</i> which is  <i>"stdout"</i> by default. 
