@@ -29,13 +29,11 @@
 
 The following are the valid <i>"sort_type"</i> params:
 || *Key* || *Abbreviation* ||
-|| "name" || - ||
-|| "callcount" || "ncall" || 
-|| "totaltime" || "ttot" || 
-|| "subtime" || "tsub" || 
-|| "avgtime" || "tavg" ||
-
-
+|| name || - ||
+|| callcount || ncall || 
+|| totaltime || ttot || 
+|| subtime || tsub || 
+|| avgtime || tavg ||
 
 
 </font>
