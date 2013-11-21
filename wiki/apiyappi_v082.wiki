@@ -6,15 +6,12 @@
 <font face='Courier New'>
 yappi.<b>start</b>(builtins=False, profile_threads=True)
 
-_Remarks:_
+    Starts profiling all threads in the current interpreter instance. This function can be called from any thread at any time. Yappi is per-interpreter resource, you cannot run more than one instance per-interpreter. A relevant exception will be raised if you do so. Resumes profiling if stop() is called previously.(Note: you can clear the profiling stats via clear_stats() between  start()/stop().)
 
-Starts profiling all threads in the current interpreter instance. This function can be called from any thread at any time. Yappi is per-interpreter resource, you cannot run more than one instance per-interpreter. A relevant exception will be raised if you do so. Resumes profiling if stop() is called previously.(Note: you can clear the profiling stats via clear_stats() between  start()/stop().)
+    _Params:_
 
-_Params:_
-
-*builtins*: Profile builtin functions used by standart Python modules. It is _False_ by _default_.
-
-*profile_threads*: Profile all of the threads if 'true', else, profile only the calling thread. 
+    *builtins*: Profile builtin functions used by standart Python modules. It is _False_ by _default_.
+    *profile_threads*: Profile all of the threads if 'true', else, profile only the calling thread. 
 
 
 <font face='Courier New'>
