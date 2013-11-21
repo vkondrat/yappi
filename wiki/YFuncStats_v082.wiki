@@ -20,8 +20,8 @@
     The following are the save formats currently available:
     || *Format* || *Description* ||
     || ystat || - ||
-    || pstats || [http://docs.python.org/3.3/library/profile.html?highlight=pstat#pstats.Stats View] || 
-    || callgrind ||[http://kcachegrind.sourceforge.net/html/CallgrindFormat.html View] ||
+    || pstats || [http://docs.python.org/3.3/library/profile.html?highlight=pstat#pstats.Stats View] a|| 
+    || callgrind ||[http://kcachegrind.sourceforge.net/html/CallgrindFormat.html View] a ||
 
 <b>print_all(out=sys.stdout)</b>
     This method prints the current profile stats to <i>"out"</i> which is  <i>"stdout"</i> by default. 
