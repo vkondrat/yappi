@@ -6,8 +6,6 @@
 <b><i>class</i></b> yappi.<b>YFuncStats</b>
 </font>
 
-<font face='Courier New'>
-
 <b>get()</b>
     This method retrieves the current profiling stats.      yappi.get_func_stats() is actually just a wrapper for this function.
 
@@ -38,5 +36,3 @@ The following are the valid <i>"sort_type"</i> params:
 || subtime || tsub || 
 || avgtime || tavg ||
 
-
-</font>
