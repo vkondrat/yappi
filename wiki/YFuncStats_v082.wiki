@@ -18,8 +18,10 @@
     This method saves the current profile stats to <i>"path"</i>. <i>"type"</i> indicates the target type that the profile stats will be saved in. Currently only loading from <i>"ystat"</i> format is possible. <i>"ystat"</i> is the current yappi internal format.
 
     The following are the save formats currently available:
-
-    ||<b> ystat || [http://docs.python.org/3.3/library/profile.html?highlight=pstat#pstats.Stats pstat ] || [http://kcachegrind.sourceforge.net/html/CallgrindFormat.html callgrind ] </b>||
+    || *Format* || *Description* ||
+    || ystat || - ||
+    || pstats || [http://docs.python.org/3.3/library/profile.html?highlight=pstat#pstats.Stats View] || 
+    || callgrind ||[http://kcachegrind.sourceforge.net/html/CallgrindFormat.html View] ||
 
 <b>print_all(out=sys.stdout)</b>
     This method prints the current profile stats to <i>"out"</i> which is  <i>"stdout"</i> by default. 
