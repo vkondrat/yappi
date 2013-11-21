@@ -32,13 +32,13 @@ Let's inspect the results in detail. So, first line:
 {{{
 Clock type: cpu
 }}}
-This indicates the profiling timing stats shown are retrieved using the CPU clock. That means the actual CPU time spent in the function is shown. Yappi provides two modes of operation: CPUm and Wall time profiling. You can change the setting by a call to set_clock_type() API.
+This indicates the profiling timing stats shown are retrieved using the CPU clock. That means the actual CPU time spent in the function is shown. Yappi provides two modes of operation: CPUm and Wall time profiling. You can change the setting by a call to [TODO: link YFuncStats.set_clock_type()] API.
 
 Second is:
 {{{
 Ordered by: totaltime, desc
 }}}
-It is obvious. It shows the sort order and sort key of the shown profiling stats. You can see the valid values for this in YFuncStats.sort() API.
+It is obvious. It shows the sort order and sort key of the shown profiling stats. You can see the valid values for this in [TODO:link YFuncStats.sort()] API.
 
 Ok, now we actually see the statistic of the function a():
 {{{
