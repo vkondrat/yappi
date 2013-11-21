@@ -38,7 +38,7 @@ yappi.<b>get_func_stats</b>()
 yappi.<b>get_thread_stats</b>()
 </font>
 
-    Returns the thread stats as [https://code.google.com/p/yappi/wiki/YThreadStats_v082 YThreadStats ] object.
+    Returns the thread stats as [https://code.google.com/p/yappi/wiki/YThreadStats_v082 YThreadStats]  object.
 
 
 <font face='Courier New'>
