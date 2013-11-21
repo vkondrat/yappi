@@ -69,11 +69,17 @@ Example on windows:
 yappi.<b>set_clock_type</b>(type)
 </font>
 
-    Sets the underlying clock type. 'type' can be either <b>WALL</b> or <b>CPU</b>.
+    Sets the underlying clock type. 
+
+'type' can be following: 
+
+|| *Clock Type* || *Description* ||
+|| Wall || [http://en.wikipedia.org/wiki/Wall_time Details] ||
+|| CPU || [http://en.wikipedia.org/wiki/CPU_time Details] ||
 
 
 <font face='Courier New'>
-yappi.<b>get_mem_usage</b>(type)
+yappi.<b>get_mem_usage</b>()
 </font>
 
     Returns the internal memory usage of the profiler itself.
