@@ -11,7 +11,7 @@ yappi.<b>start</b>(builtins=False, profile_threads=True)
     Current parameters:
 || *Param* || *Description* ||
 || builtins || Profile builtin functions used by standart Python modules. It is _False_ by _default_. ||
-|| profile_threads ||  Profile all of the threads if 'true', else, profile only the calling thread. 
+|| profile_threads ||  Profile all of the threads if 'true', else, profile only the calling thread. ||
 
   
 <font face='Courier New'>
