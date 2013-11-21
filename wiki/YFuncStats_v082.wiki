@@ -28,7 +28,7 @@
 <b>sort(sort_type, sort_order="desc")</b>
     This method sorts the current profile stats according to the  <i>"sort_type"</i> param. 
 
-The following are the valid <i>"sort_type"</i> params:
+    The following are the valid <i>"sort_type"</i> params:
 || *Key* || *Abbreviation* ||
 || name || - ||
 || callcount || ncall || 
