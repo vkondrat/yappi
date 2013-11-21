@@ -13,60 +13,46 @@ yappi.<b>start</b>(builtins=False, profile_threads=True)
 || builtins || Profile builtin functions used by standart Python modules. It is _False_ by _default_. ||
 || profile_threads ||  Profile all of the threads if 'true', else, profile only the calling thread. ||
 
-  
-
 <font face='Courier New'>
 yappi.<b>stop</b>()
 </font>
 
-_Remarks:_
-
-Stops the currently running yappi instance. Same profiling session might be resumed later by calling start().
+    Stops the currently running yappi instance. Same profiling session might be resumed later by calling start().
 
 
 <font face='Courier New'>
 yappi.<b>clear_stats</b>()
 </font>
 
-_Remarks:_
-
-Clears the profiler results. The results stays in memory unless application(all threads including the main thread) exists or clear_stats() is called.
+    Clears the profiler results. The results stays in memory unless application(all threads including the main thread) exists or clear_stats() is called.
 
 
 <font face='Courier New'>
 yappi.<b>get_func_stats</b>()
 </font>
 
-_Remarks:_
-
-Returns the function stats as [https://code.google.com/p/yappi/wiki/YFuncStats_v082 YFuncStats]  object.
+    Returns the function stats as [https://code.google.com/p/yappi/wiki/YFuncStats_v082 YFuncStats]  object.
 
 
 <font face='Courier New'>
 yappi.<b>get_thread_stats</b>()
 </font>
 
-_Remarks:_
-
-Returns the thread stats as [https://code.google.com/p/yappi/wiki/YThreadStats_v082 YThreadStats ] object.
+    Returns the thread stats as [https://code.google.com/p/yappi/wiki/YThreadStats_v082 YThreadStats ] object.
 
 
 <font face='Courier New'>
 yappi.<b>is_running</b>()
 </font>
 
-_Remarks:_
-
-Returns a boolean indicating whether profiler is running or not.
+    Returns a boolean indicating whether profiler is running or not.
 
 
 <font face='Courier New'>
 yappi.<b>get_clock_type</b>()
 </font>
 
-_Remarks:_
-
-Returns information about the underlying clock type Yappi uses to measure timing.
+    Returns information about the underlying clock type Yappi uses to measure timing.
 
 {{{
 '''
@@ -83,17 +69,13 @@ Example on windows:
 yappi.<b>set_clock_type</b>(type)
 </font>
 
-_Remarks:_
-
-Sets the underlying clock type. 'type' can be either <b>WALL</b> or <b>CPU</b>.
+    Sets the underlying clock type. 'type' can be either <b>WALL</b> or <b>CPU</b>.
 
 
 <font face='Courier New'>
 yappi.<b>get_mem_usage</b>(type)
 </font>
 
-_Remarks:_
-
-Returns the internal memory usage of the profiler itself.
+    Returns the internal memory usage of the profiler itself.
 
 </font>
