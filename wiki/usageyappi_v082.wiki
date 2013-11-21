@@ -28,9 +28,7 @@ name           tid              fname                      ttot      scnt
 _MainThread    6016             ..ppi.py.get_thread_stats  0.296402  1
 }}}
 
-Let's inspect the results in detail.
-
-So, first line:
+Let's inspect the results in detail. So, first line:
 {{{
 Clock type: cpu
 }}}
