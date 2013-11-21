@@ -52,6 +52,11 @@
 || subtime || tsub || 
 || avgtime || tavg ||
 
+   The following are the valid <i>"sort_order"</i> params:
+|| *Key* || *Abbreviation* ||
+|| descending || desc ||
+|| ascending || asc || 
+
 <b>debug_print()</b>
     This method _debug_ prints the current profile stats to <i>"stdout". Debug print prints out callee functions and more detailed info than the _print_all()_ function call.</i> 
 
