@@ -1,1 +1,7 @@
-TODO:
+#summary yappi.YFuncStats
+
+= class YFuncStats =
+
+<font face='Courier New'>
+yappi.<b>YFuncStats</b>
+</font>
