@@ -41,3 +41,28 @@ Second is:
 Ordered by: totaltime, desc
 }}}
 It is obvious. It shows the sort order and sort key of the shown profiling stats. You can see the valid values for this in YFuncStats.sort() API.
+
+Ok, now we actually see the statistic of the function a():
+{{{
+name                                    #n         tsub      ttot      tavg
+deneme.py:35 a                          1          0.296402  0.296402  0.296402
+}}}
+Let's explain the fields in detail:
+|| *Title* || *Description* ||
+|| name || the full unique name of the called function. ||
+|| #n || how many times this function is called. ||
+|| tsub || how many time this function has spent in total, subcalls excluded. ||
+|| ttot || how many time this function has spent in total, subcalls included.  ||
+|| tavg || how many time this function has spent in average, subcalls included. ||
+
+The next lines shows the thread stats. So, let see:
+{{{
+name           tid              fname                      ttot      scnt
+_MainThread    6016             ..ppi.py.get_thread_stats  0.296402  1
+}}}
+|| *Title* || *Description* ||
+|| name || the class name of the Thread.(this is the name of the class inherits the threading.Thread class) ||
+|| tid || the thread id. ||
+|| fname || the full unique name of the last called function in the releant thread. ||
+|| ttot || how many time this thread has spent in total.  ||
+|| scnt || how many times this thread is scheduled. ||
