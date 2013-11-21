@@ -6,6 +6,8 @@
 <b><i>class</i></b> yappi.<b>YFuncStats</b>
 </font>
 
+<font face='Courier New'>
+
 <b>get()</b>
     This method retrieves the current profiling stats.      yappi.get_func_stats() is actually just a wrapper for this function.
 
@@ -14,3 +16,5 @@
 
 <b>save(path, type="ystat")</b>
     This method saves the current profile stats to <i>"path"</i>. <i>"type"</i> indicates the target type that the profile stats will be saved in. Currently only loading from <i>"ystat"</i> format is possible. <i>"ystat"</i> is the current yappi internal format.
+
+</font>
