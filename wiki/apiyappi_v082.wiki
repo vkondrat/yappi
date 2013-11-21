@@ -1,4 +1,4 @@
-#summary yappi Usage Manual
+#summary yappi Reference Manual
 
 = Reference Manual (v0.82) =
 
