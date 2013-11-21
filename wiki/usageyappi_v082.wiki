@@ -6,7 +6,8 @@ A typical example on profiling with yappi, includes at least 3 lines of code:
 
 {{{
 import yappi
-def a(): pass
+def a(): 
+    for i in range(10000000): pass
 
 yappi.start()
 a()
@@ -14,4 +15,29 @@ yappi.get_func_stats().print_all()
 yappi.get_thread_stats().print_all()
 }}}
 
-So, let's interpret the results for the above example.
+And the output of running above script:
+
+{{{
+Clock type: cpu
+Ordered by: totaltime, desc
+
+name                                    #n         tsub      ttot      tavg
+deneme.py:35 a                          1          0.296402  0.296402  0.296402
+
+name           tid              fname                      ttot      scnt
+_MainThread    6016             ..ppi.py.get_thread_stats  0.296402  1
+}}}
+
+Let's inspect the results in detail.
+
+So, first line:
+{{{
+Clock type: cpu
+}}}
+This indicates the profiling timing stats shown are retrieved using the CPU clock. That means the actual CPU time spent in the function is shown. Yappi provides two modes of operation: CPUm and Wall time profiling. You can change the setting by a call to set_clock_type() API.
+
+Second is:
+{{{
+Ordered by: totaltime, desc
+}}}
+It is obvious. It shows the sort order and sort key of the shown profiling stats. You can see the valid values for this in YFuncStats.sort() API.
