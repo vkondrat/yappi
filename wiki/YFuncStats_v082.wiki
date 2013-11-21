@@ -22,6 +22,7 @@
 || [http://docs.python.org/3.3/library/profile.html?highlight=pstat#pstats.Stats.print_stats pstats] || 
 || [http://kcachegrind.sourceforge.net/html/CallgrindFormat.html callgrind] ||
 
+
 <b>print_all(out=sys.stdout)</b>
     This method prints the current profile stats to <i>"out"</i> which is  <i>"stdout"</i> by default. 
 
@@ -35,5 +36,8 @@
 || totaltime || ttot || 
 || subtime || tsub || 
 || avgtime || tavg ||
+
+<b>debug_print()</b>
+    This method _debug_ prints the current profile stats to <i>"stdout". Debug print prints out callee functions and more detailed info than the [ print_all() print_all() ] function call.</i> 
 
 </font>
