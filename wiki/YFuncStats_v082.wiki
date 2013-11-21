@@ -3,5 +3,5 @@
 = class YFuncStats =
 
 <font face='Courier New'>
-<b>class</b> yappi.<b>YFuncStats</b>
+<b><i>class</i></b> yappi.<b>YFuncStats</b>
 </font>
