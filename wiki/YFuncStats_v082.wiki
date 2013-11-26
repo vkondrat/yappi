@@ -21,7 +21,7 @@
 || nactualcall || number of times the executed function is called, excluding the recursive calls. ||
 || builtin|| boolean flag showing if the executed function is a builtin || 
 || ttot || total time spent in the executed function. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
-|| tsub || total time spent in the executed function, excluding child calls. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
+|| tsub || total time spent in the executed function, excluding subcalls. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
 || tavg || per-call average total time spent in the executed function. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
 || children || list of functions called from the executed function. See [https://code.google.com/p/yappi/wiki/YChildFuncStats_v082 YChildFuncStats] object ||
 
@@ -53,7 +53,7 @@
 || name || function's name ||
 || callcount || function's call count || 
 || totaltime || function's spent total time  || 
-|| subtime || function's spent total time, excluding child calls. || 
+|| subtime || function's spent total time, excluding subcalls. || 
 || avgtime || function's per-call average total time spent ||
 
    The following are the valid <i>"sort_order"</i> params:
