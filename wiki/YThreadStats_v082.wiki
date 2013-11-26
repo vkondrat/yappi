@@ -18,7 +18,7 @@
 || last_func_name || function name of the last executed function || 
 || last_func_full_name || mod:line_no func_name - full name of the last executed function|| 
 || last_builtin || boolean flag showing if the last executed function is a builtin ||
-|| ttot || the total CPU time spent in the thread if clock type is CPU. If clock type is WALL then it is the time difference of the start of thread and the current time || 
+|| ttot || total time spent in the last executed function. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
 || sched_count || number of times this thread is scheduled. || 
 
 <b>print_all(out=sys.stdout)</b>
