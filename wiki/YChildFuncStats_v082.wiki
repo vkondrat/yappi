@@ -27,6 +27,22 @@
 <b>print_all(out=sys.stdout)</b>
     This method prints the current profile stats to <i>"out"</i> which is  <i>"stdout"</i> by default. 
 
+<b>sort(sort_type, sort_order="desc")</b>
+    This method sorts the current profile stats according to the  <i>"sort_type"</i> param. 
+
+    The following are the valid <i>"sort_type"</i> params:
+|| *Key* || *Abbreviation* ||
+|| name || function's name ||
+|| callcount || function's call count || 
+|| totaltime || function's spent total time  || 
+|| subtime || function's spent total time, excluding subcalls. || 
+|| avgtime || function's per-call average total time spent ||
+
+   The following are the valid <i>"sort_order"</i> params:
+|| *Key* || *Abbreviation* ||
+|| descending || desc ||
+|| ascending || asc || 
+
 <b>clear()</b>
     Clears the retrieved stats. Note that this only clears the current object's stat list. You need to explicitly call _yappi.clear_stats()_ to clear the current profile stats.
 
