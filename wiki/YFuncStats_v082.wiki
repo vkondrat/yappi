@@ -67,6 +67,9 @@
 <b>empty()</b>
     Returns a boolean indicating whether we have any stats available or not. 
 
+<b>strip_dirs()</b>
+    Strip the directory information from the results. Affects the child function stats, too.
+
 <b>debug_print()</b>
     This method _debug_ prints the current profile stats to <i>"stdout". Debug print prints out callee functions and more detailed info than the _print_all()_ function call.</i> 
 
