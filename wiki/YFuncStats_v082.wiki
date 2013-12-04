@@ -12,7 +12,7 @@
 
     A _YFuncStat_ object holds the following information:
 || *Key* || *Description* ||
-|| index || A unique number for the stat (used internally) ||
+|| index || A unique number for the stat ||
 || module || Module name of the executed function ||
 || lineno || Line number of the executed function || 
 || name || Name of the executed function || 
