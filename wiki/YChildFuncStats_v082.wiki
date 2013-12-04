@@ -6,7 +6,7 @@
 
 <b><i>class</i></b> yappi.<b>YChildFuncStats</b>
 
-    _YChildFuncStat.children_ holds a list of child functions called from the main executed function as a _YChildFuncStats_ object. _YChildFuncStats_ class holds a list of _YChildFuncStat_ objects.
+_YChildFuncStat.children_ holds a list of child functions called from the main executed function as a _YChildFuncStats_ object. _YChildFuncStats_ class holds a list of _YChildFuncStat_ objects.
 
 So, as an example if a calls b, then a.children will hold b as a _YChildFuncStat_ object.
 
