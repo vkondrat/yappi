@@ -1,1 +1,21 @@
-TODO:
+#summary yappi.YChildFuncStats
+
+= class YChildFuncStats (v0.82)=
+
+<font face='Courier New'>
+
+<b><i>class</i></b> yappi.<b>YChildFuncStats</b>
+
+    _YChildFuncStat.children_ holds a list of child functions called from the main executed function as a _YChildFuncStats_ object. _YChildFuncStats_ class holds a list of _YChildFuncStat_ objects.
+
+    A _YChildFuncStat_ object holds the following information:
+|| *Key* || *Description* ||
+|| index || A unique number for the stat (used internally) ||
+|| full_name || module:lineno name - unique full name of the executed function ||
+|| ncall || number of times the executed function is called. ||
+|| nactualcall || number of times the executed function is called, excluding the recursive calls. || 
+|| ttot || total time spent in the executed function when called as a child. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
+|| tsub || total time spent in the executed function, excluding subcalls when called as a child || 
+|| builtin|| boolean flag showing if the executed function is a builtin || tavg || per-call average total time spent in the executed function when called as a child. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
+
+</font>
