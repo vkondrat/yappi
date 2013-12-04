@@ -8,9 +8,11 @@
 
     _YChildFuncStat.children_ holds a list of child functions called from the main executed function as a _YChildFuncStats_ object. _YChildFuncStats_ class holds a list of _YChildFuncStat_ objects.
 
+So, as an example if a calls b, then a.children will hold b as a _YChildFuncStat_ object.
+
     A _YChildFuncStat_ object holds the following information:
 || *Key* || *Description* ||
-|| index || A unique number for the stat (used internally) ||
+|| index || A unique number for the stat ||
 || module || Module name of the executed function ||
 || lineno || Line number of the executed function || 
 || name || Name of the executed function || 
