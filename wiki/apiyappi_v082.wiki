@@ -82,4 +82,10 @@ yappi.<b>get_mem_usage</b>()
 
     Returns the internal memory usage of the profiler itself.
 
+<font face='Courier New'>
+yappi.<b>convert2pstats</b>(stats)
+</font>
+
+    Converts the internal stat type of yappi(which is returned by a call to YFuncStats.get()) as [http://docs.python.org/3.4/library/profile.html#module-pstats pstats] object.
+
 </font>
