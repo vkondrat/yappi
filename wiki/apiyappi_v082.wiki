@@ -1,6 +1,6 @@
 #summary yappi Reference Manual
 
-<b>Please note that current version of yappi (v0.82) is not compatible with the older versions. Lots of existing API have been changed.</b>
+_*Please note that current version of yappi (v0.82) is not compatible with the older versions. Lots of existing API have been changed.*_
 
 = Reference Manual (v0.82) =
 
