@@ -26,13 +26,13 @@
 || *Sort Types* ||
 || name ||
 || id ||  
-|| totaltime or ttot || 
-|| schedcount or scnt || 
+|| totaltime/ttot || 
+|| schedcount/scnt || 
 
    The following are the valid <i>"sort_order"</i> params:
 || *Sort Orders* ||
-|| descending or desc ||
-|| ascending or asc || 
+|| descending/desc ||
+|| ascending/asc || 
 
 <b>clear()</b>
     Clears the retrieved stats. Note that this only clears the current object's stat list. You need to explicitly call _yappi.clear_stats()_ to clear the current profile stats.
