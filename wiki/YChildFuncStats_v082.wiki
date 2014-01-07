@@ -20,7 +20,7 @@
 || ncall || number of times the child function is called. ||
 || nactualcall || number of times the child function is called, excluding the recursive calls. || 
 || ttot || total time spent in the child function.Or in other words, total time parent spent in calling this child. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
-|| tsub || total time spent in the child function.Or in other words, total time child spent in itself(subcalls excluded) when called by a specific parent. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
+|| tsub || total time spent in the child function. Or in other words, total time child spent in itself(subcalls excluded) when called by a specific parent. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
 || builtin || boolean flag showing if the executed function is a builtin || 
 || tavg || per-call average total time spent in the child function. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
 
