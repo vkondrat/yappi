@@ -30,7 +30,7 @@
 || schedcount or scnt || 
 
    The following are the valid <i>"sort_order"</i> params:
-|| Sort Orders ||
+|| *Sort Orders* ||
 || descending or desc ||
 || ascending or asc || 
 
