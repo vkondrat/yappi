@@ -23,14 +23,14 @@
     This method sorts the current profile stats according to the  <i>"sort_type"</i> param. 
 
     The following are the valid <i>"sort_type"</i> params:
-|| *SortTypes* ||
+|| *Sort Types* ||
 || name ||
 || id ||  
 || totaltime or ttot || 
 || schedcount or scnt || 
 
    The following are the valid <i>"sort_order"</i> params:
-|| *SortOrders* ||
+|| Sort Orders ||
 || descending or desc ||
 || ascending or asc || 
 
