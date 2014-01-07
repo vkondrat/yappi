@@ -50,11 +50,11 @@
 
     The following are the valid <i>"sort_type"</i> params:
 || *Key* || *Abbreviation* ||
-|| name || function's name ||
-|| callcount || function's call count || 
-|| totaltime || function's spent total time  || 
-|| subtime || function's spent total time, excluding subcalls. || 
-|| avgtime || function's per-call average total time spent ||
+|| name || - ||
+|| callcount || ncall || 
+|| totaltime || ttot  || 
+|| subtime || tsub || 
+|| avgtime || tavg ||
 
    The following are the valid <i>"sort_order"</i> params:
 || *Key* || *Abbreviation* ||
