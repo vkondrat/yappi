@@ -24,10 +24,10 @@
 
     The following are the valid <i>"sort_type"</i> params:
 || *Key* || *Abbreviation* ||
-|| name || thread's class name ||
-|| id || thread's thread id  || 
-|| totaltime || thread's total time spent || 
-|| schedcount || thread's scheduled count || 
+|| name || - ||
+|| id || - || 
+|| totaltime || ttot || 
+|| schedcount || scnt || 
 
    The following are the valid <i>"sort_order"</i> params:
 || *Key* || *Abbreviation* ||
