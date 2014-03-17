@@ -20,5 +20,5 @@ the *thread stats* field gives information about the threads in the profiled app
   * *tid*: thread identifier.
   * *fname*: name of the last executed function in this thread.
   * *ttot*: total time spent in this thread.
-  * *scnt*: number of times this thread is scheduled.
+  * *scnt*: number of times the thread is scheduled.
   
