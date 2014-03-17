@@ -62,4 +62,4 @@ _MainThread    6016             0.296402  1
 || name || the class name of the Thread.(this is the name of the class inherits the threading.Thread class) ||
 || tid || the thread id. ||
 || ttot || how many time this thread has spent in total. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. ||
-|| scnt || how many times this thread is scheduled. ||
+|| scnt || how many times the thread is scheduled. ||
