@@ -1,62 +1,138 @@
-#summary yappi.YChildFuncStats
+#summary yappi Reference Manual
 
-= class YChildFuncStats (v0.92)=
+= Reference Manual (v0.92) =
 
-<font face='Courier New'>
+<font face='Consolas'>
+yappi.<b>start</b>(builtins=False, profile_threads=True)
 
-<b><i>class</i></b> yappi.<b>YChildFuncStats</b>
+    Starts profiling all threads in the current interpreter instance. This function can be called from any thread at any time. Resumes profiling if stop() is called previously.
 
-    _YChildFuncStat.children_ holds a list of child functions called from the main executed function as a _YChildFuncStats_ object. _YChildFuncStats_ class holds a list of _YChildFuncStat_ objects.
+    Current parameters:
+|| *Param* || *Description* ||
+|| builtins || Profile builtin functions used by standart Python modules. It is _False_ by _default_. ||
+|| profile_threads ||  Profile all of the threads if 'true', else, profile only the calling thread. ||
 
-    So, as an example if a calls b, then a.children will hold b as a _YChildFuncStat_ object.
+<font face='Consolas'>
+yappi.<b>stop</b>()
+</font>
 
-    A _YChildFuncStat_ object holds the following information:
-|| *Key* || *Description* ||
-|| index || A unique number for the stat ||
-|| module || Module name of the child function ||
-|| lineno || Line number of the child function || 
-|| name || Name of the child function || 
-|| full_name || module:lineno name - unique full name of the child function ||
-|| ncall || number of times the child function is called. ||
-|| nactualcall || number of times the child function is called, excluding the recursive calls. || 
-|| ttot || total time spent in the child function. Or in other words, total time parent spent in calling this child. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
-|| tsub || total time spent in the child function. Or in other words, total time child spent in itself(subcalls excluded) when called by a specific parent. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
-|| builtin || boolean flag showing if the executed function is a builtin || 
-|| tavg || per-call average total time spent in the child function. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
+    Stops the currently running yappi instance. Same profiling session might be resumed later by calling start().
 
-<b>print_all(out=sys.stdout, columns={0:("name",36), 1:("ncall", 5), 2:("tsub", 8), 3:("ttot", 8), 4:("tavg",8)})</b>
-    This method prints the current profile stats to <i>"out"</i> which is  <i>"stdout"</i> by default. 
-    <i>columns</i> dict specifies the formatting of the printable columns. Every column is formatted
-    according to the parameters of this dict's item. 
+
+<font face='Consolas'>
+yappi.<b>clear_stats</b>()
+</font>
+
+    Clears the profiler results. The results stays in memory unless application(all threads including the main thread) exists or clear_stats() is called.
+
+
+<font face='Consolas'>
+yappi.<b>get_func_stats</b>()
+</font>
+
+    Returns the function stats as [https://code.google.com/p/yappi/wiki/YFuncStats_v092 YFuncStats]  object.
+
+
+<font face='Consolas'>
+yappi.<b>get_thread_stats</b>()
+</font>
+
+    Returns the thread stats as [https://code.google.com/p/yappi/wiki/YThreadStats_v092 YThreadStats]  object.
+
+
+<font face='Consolas'>
+yappi.<b>is_running</b>()
+</font>
+
+    Returns a boolean indicating whether profiler is running or not.
+
+
+<font face='Consolas'>
+yappi.<b>get_clock_type</b>()
+</font>
+
+    Returns information about the underlying clock type Yappi uses to measure timing.
+    Return values can either be <i>CPU</i> or <i>Wall</i>.
+
+<font face='Consolas'>
+yappi.<b>set_clock_type</b>(type)
+</font>
+
+    Sets the underlying clock type. _type_ can be following: 
+
+|| *Clock Type* || *Description* ||
+|| Wall || [http://en.wikipedia.org/wiki/Wall_time Details] ||
+|| CPU || [http://en.wikipedia.org/wiki/CPU_time Details] ||
+
+<font face='Consolas'>
+yappi.<b>get_clock_time</b>()
+</font>
+
+    Returns the current clock time with regard to the underlying clock type.
+
+<font face='Consolas'>
+yappi.<b>get_clock_info</b>()
+</font>
+
+    Returns a dict containing the OS API used for timing, the precision of the underlying clock.
     
-    An example item:
-    0:("name",36) means that the first column in position '0' has title name and its 
-    size is 36. Yappi will allocate 36 characters for this column when printing.
+{{{
+'''
+Example on Windows:
+'''
+>>> import yappi
+>>> yappi.get_clock_info()
+{'resolution': '100ns', 'api': 'getthreadtimes'}
+>>>
+}}}
+
+<font face='Consolas'>
+yappi.<b>get_mem_usage</b>()
+</font>
+
+    Returns the internal memory usage of the profiler itself.
     
-<b>sort(sort_type, sort_order="desc")</b>
-    This method sorts the current profile stats according to the  <i>"sort_type"</i> param. 
+    
+<font face='Consolas'>
+yappi.<b>shift_context_time</b>(context_id, amount)
+</font>
+    Adjust a context's start time, and the time of all functions currently on
+    the context's stack. 'amount' is in the same units as get_clock_type(). A
+    negative 'amount' increases the 'ttot' statistic for this context and all
+    functions on the stack, and a positive 'amount' decreases 'ttot'.
 
-    The following are the valid <i>"sort_type"</i> params:
-|| *Sort Types* ||
-|| name ||
-|| callcount/ncall || 
-|| totaltime/ttot  || 
-|| subtime/tsub || 
-|| avgtime/tavg ||
+<font face='Consolas'>
+yappi.<b>set_context_id_callback</b>(callback)
+</font>    
+    Use a number other than thread_id to determine the current context.
+    The callback must take no arguments and return an integer. 
+    
+{{{
+'''
+Example:
+'''
+>>> import greenlet, yappi
+>>> yappi.set_context_id_callback(lambda: id(greenlet.getcurrent()))
+}}}
 
-   The following are the valid <i>"sort_order"</i> params:
-|| *Sort Orders* ||
-|| descending/desc ||
-|| ascending/asc || 
+<font face='Consolas'>
+yappi.<b>set_context_name_callback</b>(callback)
+</font>    
+    Use a string other than the current thread's class name as the context's
+    name. The callback must take no arguments and return a string.
 
-<b>clear()</b>
-    Clears the retrieved stats. Note that this only clears the current object's stat list. You need to explicitly call _yappi.clear_stats()_ to clear the current profile stats.
+{{{
+'''
+Example:
+'''
+>>> import greenlet, yappi
+>>> yappi.set_context_name_callback(lambda: greenlet.getcurrent().__class__.__name__)
+}}}
 
-<b>empty()</b>
-    Returns a boolean indicating whether we have any stats available or not. 
+<font face='Consolas'>
+yappi.<b>convert2pstats</b>(stats)
+</font>
 
-<b>debug_print()</b>
-    This method _debug_ prints the current profile stats to <i>"stdout". Debug print prints out callee functions and more detailed info than the _print_all()_ function call.</i> 
-
+    Converts the internal stat type of yappi(which is returned by a call to YFuncStats.get()) as [http://docs.python.org/3.4/library/profile.html#module-pstats pstats] object.
 
 </font>
