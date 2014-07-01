@@ -135,4 +135,36 @@ yappi.<b>convert2pstats</b>(stats)
 
     Converts the internal stat type of yappi(which is returned by a call to YFuncStats.get()) as [http://docs.python.org/3.4/library/profile.html#module-pstats pstats] object.
 
+<font face='Consolas'>
+yappi.<b>profile(clock_type="cpu", profile_builtins=False, return_callback=None):</b>(stats)
+</font>
+
+    A profile decorator that can be used to profile a single call.
+    <i>clock_type</i> and <i>profile_builtins</i> parameters are same as yappi.<i>start</i>()
+    return_callback is a callable that is called when function finishes executing. (If function
+    is recursive return_callback will be called when the last function finishes.)
+    Yappi provides the actual function object as first parameter and the stats as second
+    to this callback.
+    
+{{{
+'''
+Example:
+Below example seem simple at first but it does a lot. It simply merges different
+profiling results of a function together into a single file and save it as 
+<function_name>.profile.
+'''
+import yappi
+def aggregate(func, stats):
+    fname = "%s.profile" % (func.__name__)
+    try: 
+        stats.add(fname)
+    except IOError:
+        pass
+    stats.save(fname)
+
+@yappi.profile(return_callback=aggregate)
+def sum(x, y):
+    return x+y
+}}}
+
 </font>
