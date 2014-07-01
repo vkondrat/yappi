@@ -23,7 +23,7 @@
 || ttot || total time spent in the executed function. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
 || tsub || total time spent in the executed function, excluding subcalls. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
 || tavg || per-call average total time spent in the executed function. See [https://code.google.com/p/yappi/wiki/ClockTypes_v082 Clock Types] to interpret this value correctly. || 
-|| children || list of functions called from the executed function. See [https://code.google.com/p/yappi/wiki/YChildFuncStats_v082 YChildFuncStats] object ||
+|| children || list of functions called from the executed function. See [https://code.google.com/p/yappi/wiki/YChildFuncStats_v092 YChildFuncStats] object ||
 
 <b>add(path, type="ystat")</b>
     This method loads the saved profile stats stored in file <i>"path"</i>. <i>"type"</i> indicates the type of the saved profile stats. 
