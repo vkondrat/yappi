@@ -136,7 +136,7 @@ yappi.<b>convert2pstats</b>(stats)
     Converts the internal stat type of yappi(which is returned by a call to YFuncStats.get()) as [http://docs.python.org/3.4/library/profile.html#module-pstats pstats] object.
 
 <font face='Consolas'>
-yappi.<b>profile(clock_type="cpu", profile_builtins=False, return_callback=None):</b>(stats)
+yappi.<b>profile(clock_type="cpu", profile_builtins=False, return_callback=None)</b>
 </font>
 
     A profile decorator that can be used to profile a single call.
