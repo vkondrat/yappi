@@ -10,7 +10,6 @@ _CPython_ standart distribution is coming with three profilers. _cProfile_, _Pro
   * "Profiler pollution"(effect on the application run-time) should be very minimal.
   
 =Limitations:=
-  * Threads must be derived from "threading" module's Thread object.
   * Latest version of Yappi supports Python 2.6.x <= x <= Python.3.4
 
 </font>
